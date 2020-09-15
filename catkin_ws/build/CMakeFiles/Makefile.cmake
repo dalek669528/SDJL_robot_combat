@@ -15,9 +15,13 @@ set(CMAKE_MAKEFILE_DEPENDS
   "catkin_generated/order_packages.cmake"
   "motor_driver/catkin_generated/ordered_paths.cmake"
   "motor_driver/catkin_generated/package.cmake"
+  "serial_rw/catkin_generated/ordered_paths.cmake"
+  "serial_rw/catkin_generated/package.cmake"
   "/home/sdjl/SDJL_robot_combat/catkin_ws/src/CMakeLists.txt"
   "/home/sdjl/SDJL_robot_combat/catkin_ws/src/motor_driver/CMakeLists.txt"
   "/home/sdjl/SDJL_robot_combat/catkin_ws/src/motor_driver/package.xml"
+  "/home/sdjl/SDJL_robot_combat/catkin_ws/src/serial_rw/CMakeLists.txt"
+  "/home/sdjl/SDJL_robot_combat/catkin_ws/src/serial_rw/package.xml"
   "/opt/ros/melodic/share/catkin/cmake/../package.xml"
   "/opt/ros/melodic/share/catkin/cmake/all.cmake"
   "/opt/ros/melodic/share/catkin/cmake/assert.cmake"
@@ -175,6 +179,7 @@ set(CMAKE_MAKEFILE_PRODUCTS
   "gtest/googlemock/CMakeFiles/CMakeDirectoryInformation.cmake"
   "gtest/googlemock/gtest/CMakeFiles/CMakeDirectoryInformation.cmake"
   "motor_driver/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "serial_rw/CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 
 # Dependency information for all targets:

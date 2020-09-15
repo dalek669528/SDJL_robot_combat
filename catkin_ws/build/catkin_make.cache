@@ -1,2 +1,2 @@
-motor_driver
+motor_driver:serial_rw
 -DCATKIN_DEVEL_PREFIX=/home/sdjl/SDJL_robot_combat/catkin_ws/devel -DCMAKE_INSTALL_PREFIX=/home/sdjl/SDJL_robot_combat/catkin_ws/install -G Unix Makefiles

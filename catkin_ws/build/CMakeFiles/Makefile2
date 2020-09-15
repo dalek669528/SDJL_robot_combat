@@ -917,6 +917,24 @@ clean: motor_driver/CMakeFiles/std_msgs_generate_messages_py.dir/clean
 .PHONY : clean
 
 #=============================================================================
+# Directory level rules for directory serial_rw
+
+# Convenience name for "all" pass in the directory.
+serial_rw/all:
+
+.PHONY : serial_rw/all
+
+# Convenience name for "clean" pass in the directory.
+serial_rw/clean:
+
+.PHONY : serial_rw/clean
+
+# Convenience name for "preinstall" pass in the directory.
+serial_rw/preinstall:
+
+.PHONY : serial_rw/preinstall
+
+#=============================================================================
 # Special targets to cleanup operation of make.
 
 # Special rule to run CMake to check the build system integrity.
