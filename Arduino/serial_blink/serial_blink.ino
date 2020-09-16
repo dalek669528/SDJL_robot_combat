@@ -1,7 +1,6 @@
 int delta = 1000;         // incoming serial byte
 
 void setup() {
-  // start serial port at 9600 bps:
   pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(115200);
   while (!Serial) {}
