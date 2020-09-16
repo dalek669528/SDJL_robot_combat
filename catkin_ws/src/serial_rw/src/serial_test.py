@@ -12,8 +12,14 @@ ser = serial.Serial(
     timeout=1
 )
 
-ser.write("start\n")
+# ser.write("start\n")
+# sleep(0.005)
+s = raw_input('INPUT:')
+ser.write(s)
+ser.write("\n")
+print '--', s, '--'
 sleep(0.005)
+
 try:
     while 1:
         while ser.in_waiting:
