@@ -4,8 +4,8 @@ from time import sleep
 import serial
 
 ser = serial.Serial(
-    port='/dev/ttyUSB0',
-    baudrate = 9600,
+    port='/dev/ttyACM0',
+    baudrate = 115200,
     parity=serial.PARITY_NONE,
     stopbits=serial.STOPBITS_ONE,
     bytesize=serial.EIGHTBITS,
@@ -14,24 +14,21 @@ ser = serial.Serial(
 
 # ser.write("start\n")
 # sleep(0.005)
-s = raw_input('INPUT:')
+pwmA = raw_input('INPUT A:')
+pwmB = raw_input('INPUT B:')
+s = pwmA + "\n" + pwmB + "\n"
 ser.write(s)
-ser.write("\n")
-print '--', s, '--'
-sleep(0.005)
 
 try:
     while 1:
         while ser.in_waiting:
             x = ser.readline()
             print x, "-"
-            x = ''
-            sleep(0.005)
-            s = raw_input('INPUT:')
-            ser.write(s)
-            ser.write("\n")
-            print '--', s, '--'
-            sleep(0.005)
+            # x = ''
+            # pwmA = raw_input('INPUT A:')
+            # pwmB = raw_input('INPUT B:')
+            # s = pwmA + "\n" + pwmB + "\n"
+            # ser.write(s)
 except KeyboardInterrupt:
     ser.close()
     print('\nBye.')
