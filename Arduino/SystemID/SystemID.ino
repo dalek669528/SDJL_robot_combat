@@ -37,41 +37,37 @@
 #define SPD_INT_D1 19
 #define SPD_INT_D2 20
 
-
-
-Wheel A(50), B(50), C(50), D(50);
-
-int period = 1;
-int pwm_test = 0;
-int t = 0;
+Wheel A(0), B(0), C(0), D(0);
 
 uint32_t timer;
+uint32_t timer2;
+uint32_t start;
+uint32_t T = 100;
+
+int period = 5;
+int pwm_test = 0;
 
 void setup(){
-  timer = micros();
-//  angle_dt = micros();
-//  SendTimer = millis();
-//  ReceiveTimer = millis();
-//  SendToPCTimer = millis();
-//  SpeedTimer = millis();
-//  StopTimer = millis();
+  start = millis();
+  timer = millis();
+  timer2 = millis();
   Pin_init();
   Serial.begin(115200);
   while (!Serial) {}  // wait for serial port to connect.
 }
 
 void loop() {
-  if(millis() > timer + period){
-    Serial_rw();
-    timer = millis();
-    if(t >= 50){
-      t = 0;
-      pwm_test += (pwm_test>245? 255:pwm_test+10);
+  if(timer < start + T*1000){
+    timer2 = millis();
+    if(timer2 >= timer + period){
+        timer = (timer2/(period))*(period);
+        Serial_rw();
+      A.pwm = B.pwm = C.pwm = D.pwm = pwm_test = ChirpSine(T, (timer*0.001), 0.0002, 0.4);
     }
-    analogWrite(Motortest, pwm_test>0? pwm_test:-pwm_test);
-    t++;
+  //  PWM_Calculate();
   }
-//  PWM_Calculate();
+  else{
+    A.pwm = B.pwm = C.pwm = D.pwm = pwm_test = 0;
+  }
   Car_Control();
-
 }

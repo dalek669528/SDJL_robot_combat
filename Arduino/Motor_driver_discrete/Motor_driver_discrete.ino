@@ -38,40 +38,44 @@
 #define SPD_INT_D2 20
 
 
+#define MAX_PWM 100
+#define W 12.5
+#define L 10
 
-Wheel A(50), B(50), C(50), D(50);
 
-int period = 1;
-int pwm_test = 0;
-int t = 0;
+Wheel A(0), B(0), C(0), D(0);
+float X = 0, Y = 0, theta = 0;
+float Vx = 0, Vy = 0, w = 0;
+float desire_X = 0, desire_Y = 0, desire_theta = 0;
+float desire_Vx = 0, desire_Vy = 0, desire_w = 0;
 
+float pos_err[3] = {0, 0, 0};
+float pos_err_sum[3] = {0, 0, 0};
+float pos_err_past[3] = {0, 0, 0};
+
+int control_type = 0;
+
+int period = 50;
 uint32_t timer;
+uint32_t timer2;
 
 void setup(){
-  timer = micros();
-//  angle_dt = micros();
-//  SendTimer = millis();
-//  ReceiveTimer = millis();
-//  SendToPCTimer = millis();
-//  SpeedTimer = millis();
-//  StopTimer = millis();
+  A.set_PID(2, 0.5, 2);
+  B.set_PID(2, 0.5, 2);
+  C.set_PID(2, 0.5, 2);
+  D.set_PID(2, 0.5, 2);
+  timer = millis();
   Pin_init();
   Serial.begin(115200);
   while (!Serial) {}  // wait for serial port to connect.
 }
 
 void loop() {
-  if(millis() > timer + period){
+  timer2 = millis();
+  if(timer2 >= timer + period){
+    timer = (timer2/(period))*(period);
     Serial_rw();
-    timer = millis();
-    if(t >= 50){
-      t = 0;
-      pwm_test += (pwm_test>245? 255:pwm_test+10);
-    }
-    analogWrite(Motortest, pwm_test>0? pwm_test:-pwm_test);
-    t++;
+    PWM_Calculate();
   }
-//  PWM_Calculate();
   Car_Control();
-
 }

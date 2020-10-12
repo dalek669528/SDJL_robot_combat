@@ -10,16 +10,16 @@ void Serial_rw(){
     D.pwm = (str.substring(str.indexOf(' ')+1)).toInt();
 
   }
-  
-  double V=analogRead(AD);
-  Serial.print(V/18.21);
-  Serial.print("V ");
+  Serial.print(timer);
+  Serial.print(", ");
+  Serial.print(pwm_test);
+  Serial.print(", ");
   Serial.print(A.encoder);
-  Serial.print(" ");
+  Serial.print(", ");
   Serial.print(B.encoder);
-  Serial.print(" ");
+  Serial.print(", ");
   Serial.print(C.encoder);
-  Serial.print(" ");
+  Serial.print(", ");
   Serial.print(D.encoder);
   Serial.print("\n");
 }
