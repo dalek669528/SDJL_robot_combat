@@ -1,0 +1,14 @@
+<launch>
+    <node pkg="joy" type="joy_node" name="joy_node" required="true" output="screen">
+        <param name="coalesce_interval" type="double" value="0.05" />
+        <param name="deadzone" type="double" value="0.03" />
+    </node> 
+
+
+    <node pkg="motor_driver" type="motor_cmd_pub.py" name="motor_cmd_pub" output="screen">
+    </node> 
+    <!-- Subscribe Topics -->
+    <!-- "joy": sensor_msgs/Joy. The command read from joystick -->
+    <!-- Publish Topics -->
+    <!-- "~car_cmd": std_msgs/String. Wheels command for duckiebot -->
+</launch>

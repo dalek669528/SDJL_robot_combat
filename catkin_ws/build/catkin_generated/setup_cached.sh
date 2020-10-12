@@ -9,4 +9,3 @@
 # modified environment variables
 export PATH='/opt/ros/melodic/bin:/home/sdjl/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/local/cuda/bin'
 export PWD='/home/sdjl/SDJL_robot_combat/catkin_ws/build'
-export PYTHONPATH="/home/sdjl/SDJL_robot_combat/catkin_ws/devel/lib/python2.7/dist-packages:$PYTHONPATH"

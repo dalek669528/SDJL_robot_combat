@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import rospy
 from motor_driver.msg import Pwm
+from std_msgs.msg import String
 from time import sleep
 import serial
 import struct
@@ -18,25 +19,28 @@ class Motor_driver(object):
             bytesize=serial.EIGHTBITS,
             timeout=1
         )
-
+        self.terminate = False
         # Publications
 
         # Subscriptions
-        self.sub_pwm = rospy.Subscriber("pwm", Pwm, self.cbPWM, queue_size=1)
+        self.sub_cmd = rospy.Subscriber("motor_cmd", String, self.cbCMD, queue_size=1)
         self.listener()
 
-    def cbPWM(self, pwm_msg):
-            s = str(pwm_msg.pwmA) + " " + str(pwm_msg.pwmB) + "\n"
-            print self.encoder, "/", s,
-            self.ser.write(s)
+    def cbCMD(self, str_msg):
+            if(str_msg.data == "q"):
+                self.terminate = True
+            else:
+                s = str_msg.data + "\n"
+                self.ser.write(s)
 
     def listener(self):
-        while self.ser.isOpen():
+        while (self.ser.isOpen() and not self.terminate):
             if self.ser.in_waiting:
                 s = self.ser.readline()
                 arr = s.split(' ')
                 print arr
                 # self.encoder = self.ser.readline()
+        self.ser.close()
 
 if __name__ == '__main__':
     rospy.init_node("motor_driver",anonymous=False)

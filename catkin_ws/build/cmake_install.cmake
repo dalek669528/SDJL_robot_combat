@@ -131,8 +131,8 @@ endif()
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   include("/home/sdjl/SDJL_robot_combat/catkin_ws/build/gtest/cmake_install.cmake")
-  include("/home/sdjl/SDJL_robot_combat/catkin_ws/build/motor_driver/cmake_install.cmake")
   include("/home/sdjl/SDJL_robot_combat/catkin_ws/build/serial_rw/cmake_install.cmake")
+  include("/home/sdjl/SDJL_robot_combat/catkin_ws/build/motor_driver/cmake_install.cmake")
 
 endif()
 
