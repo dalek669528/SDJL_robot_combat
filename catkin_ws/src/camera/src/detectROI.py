@@ -19,6 +19,14 @@ def getGreen(img):
 	mask = cv2.inRange(hsv_img, lower_bound_0, upper_bound_0)
 	return mask
 
+def getBlue(img):
+	lower_bound_0 = np.array([70,60,20]) 
+	upper_bound_0 = np.array([140,255,255])
+	hsv_img   = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+	mask = cv2.inRange(hsv_img, lower_bound_0, upper_bound_0)
+	return mask
+
+
 def detect_color(img):
 	canvas = img.copy()
 	#print(canvas.shape)
@@ -28,11 +36,14 @@ def detect_color(img):
 	contours_red, hierarchy = cv2.findContours(red_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 	green_mask = getGreen(canvas)
 	contours_green, hierarchy = cv2.findContours(green_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        blue_mask = getBlue(canvas)
+	contours_blue, hierarchy = cv2.findContours(blue_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
 	roi_list = []
 	for cnt in contours_red:
 		x, y, w, h = cv2.boundingRect(cnt)
-		if((w * h) > 500*4):
+                #if((w * h) > 500*4):
+		if(((w * h) > 500*4) & ((w * h) < 57600)):
 			cv2.rectangle(canvas, (x - 10, y - 10), (x + w + 10, y + h + 10), (0, 255, 0), 2)
 			x1 = x - 10 if (x - 10) > 0 else 0
 			y1 = y - 10 if (y - 10) > 0 else 0
@@ -44,7 +55,8 @@ def detect_color(img):
 
 	for cnt in contours_green:
 		x, y, w, h = cv2.boundingRect(cnt)
-		if((w * h) > 500*4):
+		#if((w * h) > 500*4):
+                if(((w * h) > 500*4) & ((w * h) < 57600)):
 			cv2.rectangle(canvas, (x - 10, y - 10), (x + w + 10, y + h + 10), (255, 0, 0), 2)
 			x1 = x - 10 if (x - 10) > 0 else 0
 			y1 = y - 10 if (y - 10) > 0 else 0
@@ -53,5 +65,18 @@ def detect_color(img):
 
 			roi_list.append((x1, y1, x2, y2))
 			cv2.putText(canvas, 'Green', (x - 10, y - 14), cv2.FONT_HERSHEY_DUPLEX, 0.5, (255, 0, 0), 1, cv2.LINE_AA)
+
+        for cnt in contours_blue:
+		x, y, w, h = cv2.boundingRect(cnt)
+		#if((w * h) > 500*4):
+                if(((w * h) > 500*4) & ((w * h) < 57600)):
+			cv2.rectangle(canvas, (x - 10, y - 10), (x + w + 10, y + h + 10), (255, 0, 0), 2)
+			x1 = x - 10 if (x - 10) > 0 else 0
+			y1 = y - 10 if (y - 10) > 0 else 0
+			x2 = x+w+10 if (x+w+10) < dim[1] else dim[1]-1
+			y2 = y+h+10 if (y+h+10) < dim[0] else dim[0]-1
+
+			roi_list.append((x1, y1, x2, y2))
+			cv2.putText(canvas, 'Blue', (x - 10, y - 14), cv2.FONT_HERSHEY_DUPLEX, 0.5, (255, 0, 0), 1, cv2.LINE_AA)
 
 	return canvas, np.array(roi_list)

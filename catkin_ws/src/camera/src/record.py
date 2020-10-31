@@ -17,12 +17,13 @@ def make_folder(path_folder):
 
 def record_rgbd():
     #make_folder("../data/realsense/")
-
+    width = 640
+    height = 360
     pipeline = rs.pipeline()
 
     config = rs.config()
-    config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
-    config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
+    config.enable_stream(rs.stream.depth, width, height, rs.format.z16, 15)
+    config.enable_stream(rs.stream.color, width, height, rs.format.bgr8, 15)
 
     profile = pipeline.start(config)
 
@@ -30,7 +31,7 @@ def record_rgbd():
     depth_sensor.set_option(rs.option.visual_preset, 3)  # Set high accuracy for depth sensor
     depth_scale = depth_sensor.get_depth_scale()
 
-    clipping_distance_in_meters = 1
+    clipping_distance_in_meters = 2
     clipping_distance = clipping_distance_in_meters / depth_scale
 
     align_to = rs.stream.color
@@ -40,7 +41,8 @@ def record_rgbd():
     while(True):
       try:
           frames = pipeline.wait_for_frames()
-          
+          zero_count = 0
+          depth_sum = 0
           #print(frames)
           
           aligned_frames = align.process(frames)
@@ -56,31 +58,44 @@ def record_rgbd():
           grey_color = 0
           depth_image_3d = np.dstack((depth_image, depth_image, depth_image))  # Depth image is 1 channel, color is 3 channels
           
-          print('clipping_distance : ', clipping_distance)
+          #print('clipping_distance : ', clipping_distance)
           
           bg_removed = np.where(
-              (depth_image_3d > clipping_distance) | (depth_image_3d < 0),
+              (depth_image_3d > clipping_distance) | (depth_image_3d <= 0),
               grey_color,
               color_image,
           )
 
           
-          print('Max : ', np.max(depth_image))
-          print('Min : ', np.min(depth_image))
+          #print('Max : ', np.max(depth_image))
+          #print('Min : ', np.min(depth_image))
           np.set_printoptions(threshold=np.inf)
           #print(depth_image[:100, :100])
 
-	  cv2.circle(color_image, (320, 180), 10, (0,0,0), 8)
-	  cv2.circle(color_image, (960, 180), 10, (0,0,0), 8)
-	  cv2.circle(color_image, (320, 540), 10, (0,0,0), 8)
-	  cv2.circle(color_image, (960, 540), 10, (0,0,0), 8)
-          cv2.circle(color_image, (640, 540), 10, (0,0,0), 8)
+	  #cv2.circle(color_image, (320, 180), 10, (0,0,0), 8)
+	  #cv2.circle(color_image, (960, 180), 10, (0,0,0), 8)
+	  #cv2.circle(color_image, (320, 540), 10, (0,0,0), 8)
+	  #cv2.circle(color_image, (960, 540), 10, (0,0,0), 8)
+          #cv2.circle(color_image, (640, 540), 10, (0,0,0), 8)
+          cv2.rectangle(color_image, (width/4, height/4), (width/4*3, height/4*3), (0, 0, 0), 5)
+          depth_array = depth_image[width/4:width/4*3, height/4:height/4*3]
+          #print(depth_image.shape)
+          #for i in range(depth_array.shape[0]):
+          #    for j in range(depth_array.shape[1]):
+          #        if depth_array[i][j] == 0:
+          #            zero_count += 1
+          #        else:
+          #            depth_sum += depth_array[i][j]
+
+          print(depth_sum/depth_array.shape[0]/depth_array.shape[1])
+          #if zero_count > depth_array.shape[0]*depth_array.shape[1]*0.2:
+          #    print('CAN NOT DETECT!!!')
 
       	  cv2.imshow('rgb', cv2.resize(color_image, (640, 360)))
       	  cv2.imshow('bg_removed', cv2.resize(bg_removed, (640, 360)))
       	  cv2.waitKey(1)
           
-          root_path = '/home/dick/ros_test/catkin_ws/src/camera/data/realsense/for_test/points/'
+          root_path = '/home/dick/ros_test/catkin_ws/src/camera/data/realsense/for_test/zero_distance/'
           
           if not os.path.isdir(root_path):
             os.mkdir(root_path)
@@ -98,5 +113,5 @@ def record_rgbd():
 
 
 if __name__ == "__main__":
-    print('here')
+    #print('here')
     record_rgbd()

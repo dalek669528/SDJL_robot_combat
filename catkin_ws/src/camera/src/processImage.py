@@ -16,12 +16,12 @@ class detectROI(object):
  	def __init__(self):
 		self.node_name = rospy.get_name()
 		rospy.loginfo("[%s] Initializing " %(self.node_name))
-		self.depth_image = np.zeros((720, 1280))
+		self.depth_image = np.zeros((360, 640))
 		# Publications
 	   
 		# Subscriptions
 			
-		self.CameraRgbImage     = rospy.Subscriber('CameraRgbImage',   Image, self.CameraRgb_callback,   queue_size=1)
+		#self.CameraRgbImage     = rospy.Subscriber('CameraRgbImage',   Image, self.CameraRgb_callback,   queue_size=1)
 		self.BgRemovedImage     = rospy.Subscriber('BgRemovedImage',   Image, self.BgRemoved_callback,   queue_size=1)
 		self.CameraDepthImage   = rospy.Subscriber('CameraDepthImage', Image, self.CameraDepth_callback, queue_size=1)
 
@@ -30,34 +30,32 @@ class detectROI(object):
 		  cv_image = CvBridge().imgmsg_to_cv2(data, "8UC3")
 		except CvBridgeError as e:
 		  print(e)
-		cv2.imwrite('test_rgb.png', cv_image)
+		
 		print('Receive rgb!')
 
 	def BgRemoved_callback(self, data):
 	  
 		try:
-		  cv_image = CvBridge().imgmsg_to_cv2(data, "8UC3")
+		  raw_image = CvBridge().imgmsg_to_cv2(data, "8UC3")
 		except CvBridgeError as e:
 		  print(e)
-		
-		cv2.imwrite('test.png', cv_image)
 		print('Receive BgR!')
 		
-		#frame_resize = cv2.resize(cv_image, (640, 360))
-		imgs, roi_array = detect_color(cv_image)
-		cv2.imwrite('test_process.png', imgs)
+                flipped_image = cv2.flip(raw_image, -1)
+                
+                # detect image
+                imgs, roi_array = detect_color(flipped_image)
 		print(roi_array.shape)
-		print(roi_array)
 
-		#depth_image    = cv2.imread('test_depth.png')
+                cv2.imshow('detect image', imgs)
+
+                # process image
 		depth_img_array = crop_depth(roi_array, self.depth_image)
-
-		print(depth_img_array)
-
+		#print(depth_img_array)
 		coordinate_array = calculate_coordinate(depth_img_array) 
-		print(coordinate_array)
+		#print(coordinate_array)
 
-		cv2.waitKey(0)
+		cv2.waitKey(1)
 
     
  	def CameraDepth_callback(self, data):
@@ -66,7 +64,6 @@ class detectROI(object):
 			self.depth_image = cv_image.copy()
 		except CvBridgeError as e:
 			print(e)
-		cv2.imwrite('test_depth.png', cv_image)
 		print('Receive depth!')
               
 if __name__ == '__main__':

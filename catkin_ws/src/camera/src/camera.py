@@ -13,13 +13,14 @@ class Camera(object):
   def __init__(self):
     self.node_name = rospy.get_name()
     rospy.loginfo("[%s] Initializing " %(self.node_name))
-    self.image_width  = 1280
-    self.image_height = 720
+    self.image_width  = 640
+    self.image_height = 360
+    self.fps = 15
     self.pipeline     = rs.pipeline()
     
     self.config = rs.config()
-    self.config.enable_stream(rs.stream.depth, self.image_width, self.image_height, rs.format.z16, 30)
-    self.config.enable_stream(rs.stream.color, self.image_width, self.image_height, rs.format.bgr8, 30)
+    self.config.enable_stream(rs.stream.depth, self.image_width, self.image_height, rs.format.z16, self.fps)
+    self.config.enable_stream(rs.stream.color, self.image_width, self.image_height, rs.format.bgr8, self.fps)
     
     self.profile =  self.pipeline.start(self.config)
     
@@ -34,9 +35,9 @@ class Camera(object):
     self.align = rs.align(self.align_to)
     
     # Publications
-    self.CameraRgbImage   = rospy.Publisher('CameraRgbImage',   Image, queue_size=1)
-    self.BgRemovedImage   = rospy.Publisher('BgRemovedImage',   Image, queue_size=1)
-    self.CameraDepthImage = rospy.Publisher('CameraDepthImage', Image, queue_size=1)
+    self.CameraRgbImage   = rospy.Publisher('RawRGB',   Image, queue_size=1)
+    self.BgRemovedImage   = rospy.Publisher('RemoveBG',   Image, queue_size=1)
+    self.CameraDepthImage = rospy.Publisher('RawDepth', Image, queue_size=1)
     
     # Subscriptions
     
@@ -44,6 +45,7 @@ class Camera(object):
    
     
   def publishImage(self):
+    time_count = 1
     while(True):
       try:
         frames =  self.pipeline.wait_for_frames()
@@ -53,6 +55,12 @@ class Camera(object):
         
         if not aligned_depth_frame or not color_frame:
           raise RuntimeError("Could not acquire depth or color frames.")
+
+        if time_count%5 == 0:
+            time_count = 1
+        else:
+            time_count += 1
+            continue
         
         depth_image = np.asanyarray(aligned_depth_frame.get_data())
         color_image = np.asanyarray(color_frame.get_data())
@@ -60,16 +68,23 @@ class Camera(object):
         grey_color = 0
         depth_image_3d = np.dstack((depth_image, depth_image, depth_image))  # Depth image is 1 channel, color is 3 channels
         bg_removed = np.where(
-            (depth_image_3d > self.clipping_distance),
+            (depth_image_3d > self.clipping_distance) | (depth_image_3d <= 0),
             grey_color,
             color_image,
+        )
+        bg_removed2 = np.where(
+            (depth_image > self.clipping_distance) | (depth_image <= 0),
+            grey_color,
+            depth_image,
         )
 
         rospy.loginfo('Publish image.') 
         msg_rgb_frame          = CvBridge().cv2_to_imgmsg(color_image)
         msg_bg_removed_frame   = CvBridge().cv2_to_imgmsg(bg_removed)
-        msg_depth_frame        = CvBridge().cv2_to_imgmsg(depth_image)
+        msg_depth_frame        = CvBridge().cv2_to_imgmsg(bg_removed2)
+        #msg_depth_frame        = CvBridge().cv2_to_imgmsg(depth_image)
         
+
         self.CameraRgbImage.publish(msg_rgb_frame)
         self.BgRemovedImage.publish(msg_bg_removed_frame)
         self.CameraDepthImage.publish(msg_depth_frame)

@@ -19,11 +19,14 @@ def crop_depth(points, depth):
         height = p[3] - p[1]
 
         count = 0
+        depth_sum = 0
         for j in range(p[1], p[3]+1):
             for k in range(p[0], p[2]+1):
-                count += depth[j][k]
+                if depth[j][k] != 0:
+                    depth_sum += depth[j][k]
+                    count += 1
         #print(count, (width*height))
-        output[i][2] = int(count/(width*height))
+        output[i][2] = int(depth_sum/count)
 	#output[i][2] = depth[int(output[i][1])][int(output[i][0])]
     
 

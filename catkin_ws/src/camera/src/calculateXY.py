@@ -24,12 +24,12 @@ def convert_depth_to_phys_coord_using_realsense(x, y, depth):
 
 
 def calculate_coordinate(depth_img_list):
-	CAMERAS_OFFSET    = -35
-	RGB_CAMERA_OFFSET = 148	
-	output_list = []
-	for i in range(len(depth_img_list)):
-		#input argument : y(h), x(w), depth
-		w, h, depth = convert_depth_to_phys_coord_using_realsense(depth_img_list[i][1], depth_img_list[i][0], depth_img_list[i][2])  
-		x = w + CAMERAS_OFFSET + RGB_CAMERA_OFFSET
-		output_list.append([x, depth, h])
-	return np.array(output_list)
+    CAMERAS_OFFSET    = -35
+    RGB_CAMERA_OFFSET = 148	
+    output_list = []
+    for i in range(len(depth_img_list)):
+        #input argument : y(h), x(w), depth
+        w, h, depth = convert_depth_to_phys_coord_using_realsense(depth_img_list[i][1], depth_img_list[i][0], depth_img_list[i][2])  
+        x = w + CAMERAS_OFFSET + RGB_CAMERA_OFFSET
+        output_list.append([x, depth, h])
+    return np.array(output_list)
