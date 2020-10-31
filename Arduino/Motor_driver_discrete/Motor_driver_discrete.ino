@@ -16,26 +16,25 @@
 #include "wheel.h"
 
 //定义引脚名称 
-#define EN      15  //使能输出引脚，该引脚时高电平才允许控制直流电机，低电平时电机停止
+#define EN      13  //使能输出引脚，该引脚时高电平才允许控制直流电机，低电平时电机停止
 #define AD      A0  //PWM输入引脚，读取电池电压
-#define MotorA1 12  //PWM输出引脚，控制直流电机A
-#define MotorA2 11  //Dig输出引脚，控制直流电机A
-#define MotorB1 10  //PWM输出引脚，控制直流电机B
-#define MotorB2 9   //Dig输出引脚，控制直流电机B
-#define MotorC1 8   //PWM输出引脚，控制直流电机C
-#define MotorC2 7   //Dig输出引脚，控制直流电机C
-#define MotorD1 6   //PWM输出引脚，控制直流电机D
-#define MotorD2 5   //Dig输出引脚，控制直流电机D
-#define Motortest 13   //Dig输出引脚，控制直流电机D
+#define MotorA1 7   //PWM输出引脚，控制直流电机A
+#define MotorA2 12  //Dig输出引脚，控制直流电机A
+#define MotorB1 8   //PWM输出引脚，控制直流电机B
+#define MotorB2 11  //Dig输出引脚，控制直流电机B
+#define MotorC1 10  //PWM输出引脚，控制直流电机C
+#define MotorC2 9   //Dig输出引脚，控制直流电机C
+#define MotorD1 5   //PWM输出引脚，控制直流电机D
+#define MotorD2 6   //Dig输出引脚，控制直流电机D
 
-#define SPD_INT_A1 3
-#define SPD_INT_A2 4
-#define SPD_INT_B1 2
-#define SPD_INT_B2 14
-#define SPD_INT_C1 18
-#define SPD_INT_C2 17
-#define SPD_INT_D1 19
-#define SPD_INT_D2 20
+#define SPD_INT_A1 18
+#define SPD_INT_A2 14
+#define SPD_INT_B1 19
+#define SPD_INT_B2 15
+#define SPD_INT_C1 20
+#define SPD_INT_C2 16
+#define SPD_INT_D1 21
+#define SPD_INT_D2 17
 
 
 #define MAX_PWM 100
