@@ -95,9 +95,8 @@ class Camera(object):
         self.CameraDepthImage.publish(msg_depth_frame)
         
       finally:
-        print('keep')
+        print('')
         #pipeline.stop()
-              
 if __name__ == '__main__':
   rospy.init_node("CameraImagePublisher",anonymous=False)
   camera = Camera()

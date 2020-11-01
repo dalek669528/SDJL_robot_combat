@@ -6,7 +6,8 @@ import numpy as np
 import pyrealsense2 as rs
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
-from std_msgs.msg import Int32, Int32MultiArray
+from std_msgs.msg import Int32, Float32MultiArray, Int32MultiArray
+from camera.msg import Coordination
 from detectROI import detect_color
 from crop_ROI  import crop_depth
 from calculateXY import calculate_coordinate
@@ -31,7 +32,7 @@ class Preprocess(object):
 
         # Publishers
         self.Color = rospy.Publisher('Color', Int32, queue_size=1) # publish max detected color
-        self.Coord = rospy.Publisher('Coord', Int32MultiArray, queue_size=1) # publish coordination of max color
+        self.Coord = rospy.Publisher('Coord', Coordination, queue_size=1) # publish coordination of max color
         #self.Publisher_RGB = rospy.Publisher('CropedRGB', Image, queue_size=1) # RGB publish
         #self.CroppedRBG = rospy.Publisher('CropedRGB', Image, queue_size=1) # Depth publish
         #self. = rospy.Publisher('', Image, queue_size=1) # Removed BG publish
@@ -57,14 +58,14 @@ class Preprocess(object):
 
         max_roi = roi_array[max_index, :].reshape([1, 4])
         depth_img_array = crop_depth(max_roi, self.depth_image) # return detected array(x, y, depth)
-        coordinate_array = calculate_coordinate(depth_img_array)
-        print(coordinate_array) # array(x, y(depth), h)
+        coordination = calculate_coordinate(depth_img_array)
+        print(coordination) # array(x, y(depth), h)
 
         #publish
         color_msg = Int32()
-        coord_msg = Int32MultiArray()
+        coord_msg = Coordination()
         color_msg.data = max_color
-        coord_msg.data = coordinate_array
+        coord_msg.data = coordination.flatten().tolist()
         self.Color.publish(color_msg)
         self.Coord.publish(coord_msg)
 
@@ -84,8 +85,8 @@ class Preprocess(object):
         print(coordination)
 
         #publish
-        coord_msg = Int32MultiArray()
-        coord_msg.data = coordination
+        coord_msg = Coordination()
+        coord_msg.data = coordination.flatten().tolist()
         self.Coord.publish(coord_msg)
 
     def StageThree(self, enable, roi_array, color_count):
@@ -106,8 +107,8 @@ class Preprocess(object):
         print(coordination)
 
         #publish
-        coord_msg = Int32MultiArray()
-        coord_msg.data = coordination
+        coord_msg = Coordination()
+        coord_msg.data = coordination.flatten().tolist()
         self.Coord.publish(coord_msg)
 
 
@@ -137,14 +138,6 @@ class Preprocess(object):
         self.StageThree(self.stage_three, roi_array, color_count) # return the coordination of the largest green object
 
         #return 0
-
-        
-
-        # publish
-        #msg_RGB = CvBridge().cv2_to_imgmsg(flipped_image)
-        #self.Publisher_RGB.publish(msg_RGB)
-        #self.Max_color.publish(max_color)
-        #self.Max_coord.publish(max_roi)
 
     def Depth_callback(self, data):
         try:

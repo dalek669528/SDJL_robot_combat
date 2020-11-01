@@ -31,5 +31,5 @@ def calculate_coordinate(depth_img_list):
         #input argument : y(h), x(w), depth
         w, h, depth = convert_depth_to_phys_coord_using_realsense(int(depth_img_list[i][1]), int(depth_img_list[i][0]), int(depth_img_list[i][2]))
         x = w + CAMERAS_OFFSET + RGB_CAMERA_OFFSET
-        output_list.append([-x, depth, -h])
+        output_list.append([float(-x), float(depth), float(-h)])
     return np.array(output_list)
