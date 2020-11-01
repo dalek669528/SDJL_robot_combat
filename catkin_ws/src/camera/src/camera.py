@@ -64,24 +64,29 @@ class Camera(object):
         
         depth_image = np.asanyarray(aligned_depth_frame.get_data())
         color_image = np.asanyarray(color_frame.get_data())
+        flipped_rgb = cv2.flip(color_image, -1)
+        flipped_depth = cv2.flip(depth_image, -1)
         
         grey_color = 0
-        depth_image_3d = np.dstack((depth_image, depth_image, depth_image))  # Depth image is 1 channel, color is 3 channels
-        bg_removed = np.where(
+        depth_image_3d = np.dstack((flipped_depth, flipped_depth, flipped_depth))  # Depth image is 1 channel, color is 3 channels
+        bg_removed_rgb = np.where(
             (depth_image_3d > self.clipping_distance) | (depth_image_3d <= 0),
             grey_color,
-            color_image,
+            flipped_rgb,
         )
-        bg_removed2 = np.where(
-            (depth_image > self.clipping_distance) | (depth_image <= 0),
+
+        # filt too far and 0 distance value in depth image
+        filted_depth_image = np.where(
+            (flipped_depth > self.clipping_distance) | (flipped_depth <= 0),
             grey_color,
-            depth_image,
+            flipped_depth,
         )
 
         rospy.loginfo('Publish image.') 
-        msg_rgb_frame          = CvBridge().cv2_to_imgmsg(color_image)
-        msg_bg_removed_frame   = CvBridge().cv2_to_imgmsg(bg_removed)
-        msg_depth_frame        = CvBridge().cv2_to_imgmsg(bg_removed2)
+
+        msg_rgb_frame          = CvBridge().cv2_to_imgmsg(flipped_rgb)
+        msg_bg_removed_frame   = CvBridge().cv2_to_imgmsg(bg_removed_rgb)
+        msg_depth_frame        = CvBridge().cv2_to_imgmsg(filted_depth_image)
         #msg_depth_frame        = CvBridge().cv2_to_imgmsg(depth_image)
         
 
