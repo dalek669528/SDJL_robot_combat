@@ -29,8 +29,8 @@ class Preprocess(object):
         self.RemoveBG = rospy.Subscriber('RemoveBG', Image, self.RemoveBG_callback, queue_size=1)
 
         # Publishers
-        #self.Max_color = rospy.Publisher('MaxColor', Int32, queue_size=1) # publish max detected color
-        #self.Max_coord = rospy.Publisher('MaxCoord', Int32MultiArray, queue_size=1) # publish coordination of max color
+        self.Color = rospy.Publisher('Color', Int32, queue_size=1) # publish max detected color
+        self.Coord = rospy.Publisher('Coord', Int32MultiArray, queue_size=1) # publish coordination of max color
         #self.Publisher_RGB = rospy.Publisher('CropedRGB', Image, queue_size=1) # RGB publish
         #self.CroppedRBG = rospy.Publisher('CropedRGB', Image, queue_size=1) # Depth publish
         #self. = rospy.Publisher('', Image, queue_size=1) # Removed BG publish
@@ -53,12 +53,19 @@ class Preprocess(object):
         elif max_index < color_count.sum:
             max_color = 2
         print(max_color)
+
         max_roi = roi_array[max_index, :].reshape([1, 4])
         depth_img_array = crop_depth(max_roi, self.depth_image) # return detected array(x, y, depth)
-        #depth_img_array = crop_depth(roi_array, self.depth_image) # return detected (x, y, depth)
         coordinate_array = calculate_coordinate(depth_img_array)
         print(coordinate_array) # array(x, y(depth), h)
-        return 0
+
+        #publish
+        color_mag = Int32()
+        coord_msg = Int32MultiArray()
+        color_msg.data = max_color
+        coord_msg.data = coordinate_array
+        self.Color.publish(color_msg)
+        self.Coord.publish(coord_msg)
 
     def StageTwo(self, color, roi_array, color_count):
         #remember to filt if green or blue are not detected!!!
@@ -74,7 +81,11 @@ class Preprocess(object):
         closest = depth_img_array[sorted_index[0], :].reshape([1, 3])
         coordination = calculate_coordinate(closest)
         print(coordination)
-        return 0
+
+        #publish
+        coord_msg = Int32MultiArray()
+        coord_msg.data = coordination
+        self.Coord.publish(coord_msg)
 
     def StageThree(self, enable, roi_array, color_count):
         if (enable < 0) | (color_count[1] == 0):
@@ -92,7 +103,11 @@ class Preprocess(object):
         depth_img_array = crop_depth(max_roi, self.depth_image)
         coordination = calculate_coordinate(depth_img_array)
         print(coordination)
-        return 0
+
+        #publish
+        coord_msg = Int32MultiArray()
+        coord_msg.data = coordination
+        self.Coord.publish(coord_msg)
 
 
     def RGB_callback(self, data):
