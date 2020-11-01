@@ -22,6 +22,7 @@ class Preprocess(object):
         self.depth_image = np.zeros((360, 640))
         self.removeBG_image = np.zeros((360, 640))
         self.stage_one = -1
+        self.stage_three = -1
         self.target_color = -1
         # Subscribers
         self.RawRGB = rospy.Subscriber('RawRGB', Image, self.RGB_callback, queue_size=1)
@@ -60,7 +61,7 @@ class Preprocess(object):
         print(coordinate_array) # array(x, y(depth), h)
 
         #publish
-        color_mag = Int32()
+        color_msg = Int32()
         coord_msg = Int32MultiArray()
         color_msg.data = max_color
         coord_msg.data = coordinate_array
@@ -128,7 +129,7 @@ class Preprocess(object):
             return 0
 
 
-        #self.stage_one = 1
+        self.stage_one = 1
         self.StageOne(self.stage_one, roi_array, color_count) # return the coordination and the color of the largest object
         #self.target_color = 2
         self.StageTwo(self.target_color, roi_array, color_count) # return the closest coordination of target color

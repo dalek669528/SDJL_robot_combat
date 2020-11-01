@@ -26,7 +26,10 @@ def crop_depth(points, depth):
                     depth_sum += depth[j][k]
                     count += 1
         #print(count, (width*height))
-        output[i][2] = int(depth_sum/count)
+        if count > 0:
+            output[i][2] = int(depth_sum/count)
+        else:
+            output[i][2] = 0
 	#output[i][2] = depth[int(output[i][1])][int(output[i][0])]
     
 
