@@ -8,16 +8,21 @@ void PWM_Calculate()
   
   Vx = (-A.v + B.v - C.v + D.v)/4;
   Vy = (A.v + B.v + C.v + D.v)/4;
-  w = (A.v + B.v - C.v - D.v)/(4*(W+L));
+  w = (A.v + B.v - C.v - D.v)/(4*(W+L)) * 180 / PI;
 
   X += (-A.delta_x + B.delta_x - C.delta_x + D.delta_x)/4;
   Y += (A.delta_x + B.delta_x + C.delta_x + D.delta_x)/4;
-  theta += ((A.delta_x + B.delta_x - C.delta_x - D.delta_x)/(4*(W+L)));
+  theta += ((A.delta_x + B.delta_x - C.delta_x - D.delta_x)/(4*(W+L))) * 180 / PI;
+  if(theta>=360)
+    theta -= 360;
+  else if(theta < 0){
+    theta += 360;
+  }
 
 
 
   if(control_type == 4){
-    Position_PID(1, 0, 4);
+    Position_PID();
   }
   if(control_type >= 3){
     A.desire_V = - desire_Vx + desire_Vy + desire_w*(W+L);

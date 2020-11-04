@@ -51,8 +51,9 @@ float desire_Vx = 0, desire_Vy = 0, desire_w = 0;
 float pos_err[3] = {0, 0, 0};
 float pos_err_sum[3] = {0, 0, 0};
 float pos_err_past[3] = {0, 0, 0};
+float p_Kp = 1, p_Ki = 0, p_Kd = 4; 
 
-int control_type = 0;
+int control_type = 0, past_control_type = 0;
 
 int period = 50;
 uint32_t timer;
