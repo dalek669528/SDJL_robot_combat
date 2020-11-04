@@ -1,9 +1,15 @@
 # Hashes of file build rules.
-c62f00ab7ae7ad57774bf78ebbf54680 /home/sdjl/SDJL_robot_combat/catkin_ws/devel/include/motor_driver/Pwm.h
-7b964e4b48e03d2e696fecac14aea48f /home/sdjl/SDJL_robot_combat/catkin_ws/devel/lib/python2.7/dist-packages/motor_driver/msg/_Pwm.py
-331d67299f223cf93af1d668ddb232cf /home/sdjl/SDJL_robot_combat/catkin_ws/devel/lib/python2.7/dist-packages/motor_driver/msg/__init__.py
-1092fdec9efe9b796dad1b900874290d /home/sdjl/SDJL_robot_combat/catkin_ws/devel/share/common-lisp/ros/motor_driver/msg/Pwm.lisp
-bdbca2655f41a19ea5978e3837bf9363 /home/sdjl/SDJL_robot_combat/catkin_ws/devel/share/gennodejs/ros/motor_driver/msg/Pwm.js
-b6724c9a1b2ba5895023a8e68825dbcb /home/sdjl/SDJL_robot_combat/catkin_ws/devel/share/roseus/ros/motor_driver/manifest.l
-093dc6e70596d328df1c83daecd1272e /home/sdjl/SDJL_robot_combat/catkin_ws/devel/share/roseus/ros/motor_driver/msg/Pwm.l
-ae7bd6cee543fa1abbe4809645ce0848 CMakeFiles/clean_test_results
+93ca7152c94f98dc9ee34fec2f071630 /home/dick/SDJL_robot_combat/catkin_ws/devel/include/camera/Coordination.h
+d94d8338b97aa071161175fae72f11b6 /home/dick/SDJL_robot_combat/catkin_ws/devel/lib/python2.7/dist-packages/camera/msg/_Coordination.py
+db37566131520f78e73cfa26932fab6f /home/dick/SDJL_robot_combat/catkin_ws/devel/lib/python2.7/dist-packages/camera/msg/__init__.py
+0705be90762ffdc6c5c4858aa4215e49 /home/dick/SDJL_robot_combat/catkin_ws/devel/share/common-lisp/ros/camera/msg/Coordination.lisp
+9cc2ee080e46d328611bd1a2f29b9237 /home/dick/SDJL_robot_combat/catkin_ws/devel/share/gennodejs/ros/camera/msg/Coordination.js
+d4247df27d9f56def4ceb09d2485161e /home/dick/SDJL_robot_combat/catkin_ws/devel/share/roseus/ros/camera/manifest.l
+58ac10aaf5f88827c2e7b42cf6697488 /home/dick/SDJL_robot_combat/catkin_ws/devel/share/roseus/ros/camera/msg/Coordination.l
+c3cb885e8998e39d4778e3875f0b82f1 CMakeFiles/clean_test_results
+5d117b6f77f6de56c3cd977a981a6256 camera/CMakeFiles/_camera_generate_messages_check_deps_Coordination
+4977f057cffc6c53047f95cdae698cc0 camera/CMakeFiles/camera_generate_messages_cpp
+4977f057cffc6c53047f95cdae698cc0 camera/CMakeFiles/camera_generate_messages_eus
+4977f057cffc6c53047f95cdae698cc0 camera/CMakeFiles/camera_generate_messages_lisp
+4977f057cffc6c53047f95cdae698cc0 camera/CMakeFiles/camera_generate_messages_nodejs
+4977f057cffc6c53047f95cdae698cc0 camera/CMakeFiles/camera_generate_messages_py

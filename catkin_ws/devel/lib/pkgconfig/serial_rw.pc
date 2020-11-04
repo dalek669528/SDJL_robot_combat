@@ -1,4 +1,4 @@
-prefix=/home/sdjl/SDJL_robot_combat/catkin_ws/devel
+prefix=/home/dick/SDJL_robot_combat/catkin_ws/devel
 
 Name: serial_rw
 Description: Description of serial_rw

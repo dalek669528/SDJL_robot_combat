@@ -1,4 +1,4 @@
-prefix=/home/sdjl/SDJL_robot_combat/catkin_ws/install
+prefix=/home/dick/SDJL_robot_combat/catkin_ws/install
 
 Name: motor_driver
 Description: Description of motor_driver

@@ -1,8 +1,8 @@
-# Install script for directory: /home/sdjl/SDJL_robot_combat/catkin_ws/src/serial_rw
+# Install script for directory: /home/dick/SDJL_robot_combat/catkin_ws/src/serial_rw
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/sdjl/SDJL_robot_combat/catkin_ws/install")
+  set(CMAKE_INSTALL_PREFIX "/home/dick/SDJL_robot_combat/catkin_ws/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -37,18 +37,23 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
   set(CMAKE_CROSSCOMPILING "FALSE")
 endif()
 
+# Set default install directory permissions.
+if(NOT DEFINED CMAKE_OBJDUMP)
+  set(CMAKE_OBJDUMP "/usr/bin/objdump")
+endif()
+
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/sdjl/SDJL_robot_combat/catkin_ws/build/serial_rw/catkin_generated/installspace/serial_rw.pc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/dick/SDJL_robot_combat/catkin_ws/build/serial_rw/catkin_generated/installspace/serial_rw.pc")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/serial_rw/cmake" TYPE FILE FILES
-    "/home/sdjl/SDJL_robot_combat/catkin_ws/build/serial_rw/catkin_generated/installspace/serial_rwConfig.cmake"
-    "/home/sdjl/SDJL_robot_combat/catkin_ws/build/serial_rw/catkin_generated/installspace/serial_rwConfig-version.cmake"
+    "/home/dick/SDJL_robot_combat/catkin_ws/build/serial_rw/catkin_generated/installspace/serial_rwConfig.cmake"
+    "/home/dick/SDJL_robot_combat/catkin_ws/build/serial_rw/catkin_generated/installspace/serial_rwConfig-version.cmake"
     )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/serial_rw" TYPE FILE FILES "/home/sdjl/SDJL_robot_combat/catkin_ws/src/serial_rw/package.xml")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/serial_rw" TYPE FILE FILES "/home/dick/SDJL_robot_combat/catkin_ws/src/serial_rw/package.xml")
 endif()
 
