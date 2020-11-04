@@ -30,7 +30,7 @@ class Camera(object):
     
     self.clipping_distance_in_meters = 1
     self.clipping_distance = self.clipping_distance_in_meters / self.depth_scale
-    
+    print('depth_scale : ', self.depth_scale)
     self.align_to = rs.stream.color
     self.align = rs.align(self.align_to)
     

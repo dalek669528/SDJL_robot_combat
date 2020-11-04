@@ -138,6 +138,7 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   include("/home/dick/SDJL_robot_combat/catkin_ws/build/gtest/cmake_install.cmake")
   include("/home/dick/SDJL_robot_combat/catkin_ws/build/camera/cmake_install.cmake")
   include("/home/dick/SDJL_robot_combat/catkin_ws/build/serial_rw/cmake_install.cmake")
+  include("/home/dick/SDJL_robot_combat/catkin_ws/build/master/cmake_install.cmake")
   include("/home/dick/SDJL_robot_combat/catkin_ws/build/motor_driver/cmake_install.cmake")
 
 endif()

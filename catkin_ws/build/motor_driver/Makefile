@@ -87,16 +87,26 @@ install/strip/fast: preinstall/fast
 	/usr/local/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
 .PHONY : install/strip/fast
 
-# Special rule for the target rebuild_cache
-rebuild_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	/usr/local/bin/cmake --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
-.PHONY : rebuild_cache
+# Special rule for the target edit_cache
+edit_cache:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
+	/usr/local/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
+.PHONY : edit_cache
 
-# Special rule for the target rebuild_cache
-rebuild_cache/fast: rebuild_cache
+# Special rule for the target edit_cache
+edit_cache/fast: edit_cache
 
-.PHONY : rebuild_cache/fast
+.PHONY : edit_cache/fast
+
+# Special rule for the target list_install_components
+list_install_components:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Available install components are: \"Unspecified\""
+.PHONY : list_install_components
+
+# Special rule for the target list_install_components
+list_install_components/fast: list_install_components
+
+.PHONY : list_install_components/fast
 
 # Special rule for the target test
 test:
@@ -121,26 +131,16 @@ install/local/fast: preinstall/fast
 	/usr/local/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
 .PHONY : install/local/fast
 
-# Special rule for the target edit_cache
-edit_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
-	/usr/local/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
-.PHONY : edit_cache
+# Special rule for the target rebuild_cache
+rebuild_cache:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
+	/usr/local/bin/cmake --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+.PHONY : rebuild_cache
 
-# Special rule for the target edit_cache
-edit_cache/fast: edit_cache
+# Special rule for the target rebuild_cache
+rebuild_cache/fast: rebuild_cache
 
-.PHONY : edit_cache/fast
-
-# Special rule for the target list_install_components
-list_install_components:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Available install components are: \"Unspecified\""
-.PHONY : list_install_components
-
-# Special rule for the target list_install_components
-list_install_components/fast: list_install_components
-
-.PHONY : list_install_components/fast
+.PHONY : rebuild_cache/fast
 
 # Special rule for the target install
 install: preinstall
@@ -186,156 +186,6 @@ depend:
 	cd /home/dick/SDJL_robot_combat/catkin_ws/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
-# Convenience name for target.
-motor_driver/CMakeFiles/sensor_msgs_generate_messages_py.dir/rule:
-	cd /home/dick/SDJL_robot_combat/catkin_ws/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 motor_driver/CMakeFiles/sensor_msgs_generate_messages_py.dir/rule
-.PHONY : motor_driver/CMakeFiles/sensor_msgs_generate_messages_py.dir/rule
-
-# Convenience name for target.
-sensor_msgs_generate_messages_py: motor_driver/CMakeFiles/sensor_msgs_generate_messages_py.dir/rule
-
-.PHONY : sensor_msgs_generate_messages_py
-
-# fast build rule for target.
-sensor_msgs_generate_messages_py/fast:
-	cd /home/dick/SDJL_robot_combat/catkin_ws/build && $(MAKE) $(MAKESILENT) -f motor_driver/CMakeFiles/sensor_msgs_generate_messages_py.dir/build.make motor_driver/CMakeFiles/sensor_msgs_generate_messages_py.dir/build
-.PHONY : sensor_msgs_generate_messages_py/fast
-
-# Convenience name for target.
-motor_driver/CMakeFiles/sensor_msgs_generate_messages_nodejs.dir/rule:
-	cd /home/dick/SDJL_robot_combat/catkin_ws/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 motor_driver/CMakeFiles/sensor_msgs_generate_messages_nodejs.dir/rule
-.PHONY : motor_driver/CMakeFiles/sensor_msgs_generate_messages_nodejs.dir/rule
-
-# Convenience name for target.
-sensor_msgs_generate_messages_nodejs: motor_driver/CMakeFiles/sensor_msgs_generate_messages_nodejs.dir/rule
-
-.PHONY : sensor_msgs_generate_messages_nodejs
-
-# fast build rule for target.
-sensor_msgs_generate_messages_nodejs/fast:
-	cd /home/dick/SDJL_robot_combat/catkin_ws/build && $(MAKE) $(MAKESILENT) -f motor_driver/CMakeFiles/sensor_msgs_generate_messages_nodejs.dir/build.make motor_driver/CMakeFiles/sensor_msgs_generate_messages_nodejs.dir/build
-.PHONY : sensor_msgs_generate_messages_nodejs/fast
-
-# Convenience name for target.
-motor_driver/CMakeFiles/geometry_msgs_generate_messages_cpp.dir/rule:
-	cd /home/dick/SDJL_robot_combat/catkin_ws/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 motor_driver/CMakeFiles/geometry_msgs_generate_messages_cpp.dir/rule
-.PHONY : motor_driver/CMakeFiles/geometry_msgs_generate_messages_cpp.dir/rule
-
-# Convenience name for target.
-geometry_msgs_generate_messages_cpp: motor_driver/CMakeFiles/geometry_msgs_generate_messages_cpp.dir/rule
-
-.PHONY : geometry_msgs_generate_messages_cpp
-
-# fast build rule for target.
-geometry_msgs_generate_messages_cpp/fast:
-	cd /home/dick/SDJL_robot_combat/catkin_ws/build && $(MAKE) $(MAKESILENT) -f motor_driver/CMakeFiles/geometry_msgs_generate_messages_cpp.dir/build.make motor_driver/CMakeFiles/geometry_msgs_generate_messages_cpp.dir/build
-.PHONY : geometry_msgs_generate_messages_cpp/fast
-
-# Convenience name for target.
-motor_driver/CMakeFiles/sensor_msgs_generate_messages_cpp.dir/rule:
-	cd /home/dick/SDJL_robot_combat/catkin_ws/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 motor_driver/CMakeFiles/sensor_msgs_generate_messages_cpp.dir/rule
-.PHONY : motor_driver/CMakeFiles/sensor_msgs_generate_messages_cpp.dir/rule
-
-# Convenience name for target.
-sensor_msgs_generate_messages_cpp: motor_driver/CMakeFiles/sensor_msgs_generate_messages_cpp.dir/rule
-
-.PHONY : sensor_msgs_generate_messages_cpp
-
-# fast build rule for target.
-sensor_msgs_generate_messages_cpp/fast:
-	cd /home/dick/SDJL_robot_combat/catkin_ws/build && $(MAKE) $(MAKESILENT) -f motor_driver/CMakeFiles/sensor_msgs_generate_messages_cpp.dir/build.make motor_driver/CMakeFiles/sensor_msgs_generate_messages_cpp.dir/build
-.PHONY : sensor_msgs_generate_messages_cpp/fast
-
-# Convenience name for target.
-motor_driver/CMakeFiles/sensor_msgs_generate_messages_eus.dir/rule:
-	cd /home/dick/SDJL_robot_combat/catkin_ws/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 motor_driver/CMakeFiles/sensor_msgs_generate_messages_eus.dir/rule
-.PHONY : motor_driver/CMakeFiles/sensor_msgs_generate_messages_eus.dir/rule
-
-# Convenience name for target.
-sensor_msgs_generate_messages_eus: motor_driver/CMakeFiles/sensor_msgs_generate_messages_eus.dir/rule
-
-.PHONY : sensor_msgs_generate_messages_eus
-
-# fast build rule for target.
-sensor_msgs_generate_messages_eus/fast:
-	cd /home/dick/SDJL_robot_combat/catkin_ws/build && $(MAKE) $(MAKESILENT) -f motor_driver/CMakeFiles/sensor_msgs_generate_messages_eus.dir/build.make motor_driver/CMakeFiles/sensor_msgs_generate_messages_eus.dir/build
-.PHONY : sensor_msgs_generate_messages_eus/fast
-
-# Convenience name for target.
-motor_driver/CMakeFiles/sensor_msgs_generate_messages_lisp.dir/rule:
-	cd /home/dick/SDJL_robot_combat/catkin_ws/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 motor_driver/CMakeFiles/sensor_msgs_generate_messages_lisp.dir/rule
-.PHONY : motor_driver/CMakeFiles/sensor_msgs_generate_messages_lisp.dir/rule
-
-# Convenience name for target.
-sensor_msgs_generate_messages_lisp: motor_driver/CMakeFiles/sensor_msgs_generate_messages_lisp.dir/rule
-
-.PHONY : sensor_msgs_generate_messages_lisp
-
-# fast build rule for target.
-sensor_msgs_generate_messages_lisp/fast:
-	cd /home/dick/SDJL_robot_combat/catkin_ws/build && $(MAKE) $(MAKESILENT) -f motor_driver/CMakeFiles/sensor_msgs_generate_messages_lisp.dir/build.make motor_driver/CMakeFiles/sensor_msgs_generate_messages_lisp.dir/build
-.PHONY : sensor_msgs_generate_messages_lisp/fast
-
-# Convenience name for target.
-motor_driver/CMakeFiles/geometry_msgs_generate_messages_py.dir/rule:
-	cd /home/dick/SDJL_robot_combat/catkin_ws/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 motor_driver/CMakeFiles/geometry_msgs_generate_messages_py.dir/rule
-.PHONY : motor_driver/CMakeFiles/geometry_msgs_generate_messages_py.dir/rule
-
-# Convenience name for target.
-geometry_msgs_generate_messages_py: motor_driver/CMakeFiles/geometry_msgs_generate_messages_py.dir/rule
-
-.PHONY : geometry_msgs_generate_messages_py
-
-# fast build rule for target.
-geometry_msgs_generate_messages_py/fast:
-	cd /home/dick/SDJL_robot_combat/catkin_ws/build && $(MAKE) $(MAKESILENT) -f motor_driver/CMakeFiles/geometry_msgs_generate_messages_py.dir/build.make motor_driver/CMakeFiles/geometry_msgs_generate_messages_py.dir/build
-.PHONY : geometry_msgs_generate_messages_py/fast
-
-# Convenience name for target.
-motor_driver/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/rule:
-	cd /home/dick/SDJL_robot_combat/catkin_ws/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 motor_driver/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/rule
-.PHONY : motor_driver/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/rule
-
-# Convenience name for target.
-geometry_msgs_generate_messages_lisp: motor_driver/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/rule
-
-.PHONY : geometry_msgs_generate_messages_lisp
-
-# fast build rule for target.
-geometry_msgs_generate_messages_lisp/fast:
-	cd /home/dick/SDJL_robot_combat/catkin_ws/build && $(MAKE) $(MAKESILENT) -f motor_driver/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/build.make motor_driver/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/build
-.PHONY : geometry_msgs_generate_messages_lisp/fast
-
-# Convenience name for target.
-motor_driver/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/rule:
-	cd /home/dick/SDJL_robot_combat/catkin_ws/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 motor_driver/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/rule
-.PHONY : motor_driver/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/rule
-
-# Convenience name for target.
-geometry_msgs_generate_messages_nodejs: motor_driver/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/rule
-
-.PHONY : geometry_msgs_generate_messages_nodejs
-
-# fast build rule for target.
-geometry_msgs_generate_messages_nodejs/fast:
-	cd /home/dick/SDJL_robot_combat/catkin_ws/build && $(MAKE) $(MAKESILENT) -f motor_driver/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/build.make motor_driver/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/build
-.PHONY : geometry_msgs_generate_messages_nodejs/fast
-
-# Convenience name for target.
-motor_driver/CMakeFiles/geometry_msgs_generate_messages_eus.dir/rule:
-	cd /home/dick/SDJL_robot_combat/catkin_ws/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 motor_driver/CMakeFiles/geometry_msgs_generate_messages_eus.dir/rule
-.PHONY : motor_driver/CMakeFiles/geometry_msgs_generate_messages_eus.dir/rule
-
-# Convenience name for target.
-geometry_msgs_generate_messages_eus: motor_driver/CMakeFiles/geometry_msgs_generate_messages_eus.dir/rule
-
-.PHONY : geometry_msgs_generate_messages_eus
-
-# fast build rule for target.
-geometry_msgs_generate_messages_eus/fast:
-	cd /home/dick/SDJL_robot_combat/catkin_ws/build && $(MAKE) $(MAKESILENT) -f motor_driver/CMakeFiles/geometry_msgs_generate_messages_eus.dir/build.make motor_driver/CMakeFiles/geometry_msgs_generate_messages_eus.dir/build
-.PHONY : geometry_msgs_generate_messages_eus/fast
-
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -349,16 +199,6 @@ help:
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... test"
-	@echo "... geometry_msgs_generate_messages_cpp"
-	@echo "... geometry_msgs_generate_messages_eus"
-	@echo "... geometry_msgs_generate_messages_lisp"
-	@echo "... geometry_msgs_generate_messages_nodejs"
-	@echo "... geometry_msgs_generate_messages_py"
-	@echo "... sensor_msgs_generate_messages_cpp"
-	@echo "... sensor_msgs_generate_messages_eus"
-	@echo "... sensor_msgs_generate_messages_lisp"
-	@echo "... sensor_msgs_generate_messages_nodejs"
-	@echo "... sensor_msgs_generate_messages_py"
 .PHONY : help
 
 

@@ -18,6 +18,31 @@ def crop_depth(points, depth):
         width = p[2] - p[0]
         height = p[3] - p[1]
 
+        temp = depth[p[1]:p[3]+1, p[0]:p[2]+1].copy()
+        exist = (temp != 0)
+        num = temp.sum()
+        den = exist.sum()
+        
+        if den > 0:
+            output[i][2] = int(num/den)
+        else:
+            output[i][2] = 0
+            
+    return output #n*3 array
+    
+'''
+
+  temp = depth[p[1]:p[3]+1, p[0]:p[2]+1].copy()
+        exist = (temp != 0)
+        num = temp.sum()
+        den = exist.sum()
+        
+        if den > 0:
+            output[i][2] = int(num/den)
+        else:
+            output[i][2] = 0
+
+
         count = 0
         depth_sum = 0
         for j in range(p[1], p[3]+1):
@@ -31,6 +56,4 @@ def crop_depth(points, depth):
         else:
             output[i][2] = 0
 	#output[i][2] = depth[int(output[i][1])][int(output[i][0])]
-    
-
-    return output #n*3 array
+'''

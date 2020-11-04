@@ -7,4 +7,5 @@
 subdirs("gtest")
 subdirs("camera")
 subdirs("serial_rw")
+subdirs("master")
 subdirs("motor_driver")

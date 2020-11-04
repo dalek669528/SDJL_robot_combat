@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
-from motor_driver.msg import Pwm
 from std_msgs.msg import String
+from geometry_msgs.msg import Pose2D
 from time import sleep
 import serial
 import struct
@@ -20,7 +20,11 @@ class Motor_driver(object):
             timeout=1
         )
         self.terminate = False
+        self.last_t = 0     # ms
+        self.T = 500        # ms
+
         # Publications
+        self.pub_pos = rospy.Publisher("position", Pose2D, queue_size=1)
 
         # Subscriptions
         self.sub_cmd = rospy.Subscriber("motor_cmd", String, self.cbCMD, queue_size=1)
@@ -34,12 +38,22 @@ class Motor_driver(object):
                 self.ser.write(s)
 
     def listener(self):
+        for _ in range(10):
+            if(self.ser.isOpen() and not self.terminate):
+                self.ser.readline()
         while (self.ser.isOpen() and not self.terminate):
             if self.ser.in_waiting:
                 s = self.ser.readline()
                 arr = s.split(' ')
-                print arr
-                # self.encoder = self.ser.readline()
+                if(len(arr) >= 20 and arr[0].isdigit()):
+                    if((int(arr[0]) - self.last_t) >= self.T):
+                        print arr
+                        self.last_t = int(arr[0])
+                        pose = Pose2D()
+                        pose.x = float(arr[3])
+                        pose.y = float(arr[4])
+                        pose.theta = float(arr[5])
+                        self.pub_pos.publish(pose);
         self.ser.close()
 
 if __name__ == '__main__':
