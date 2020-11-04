@@ -75,7 +75,15 @@ void Serial_rw(){
     Serial.print(C.encoder);
     Serial.print(" ");
     Serial.print(D.encoder);
-    Serial.print("\n");
+    Serial.print(" || ");
+    Serial.print(A.v);
+    Serial.print(" ");
+    Serial.print(B.v);
+    Serial.print(" ");
+    Serial.print(C.v);
+    Serial.print(" ");
+    Serial.print(D.v);
+    Serial.print("  cm/s\n");    
   }
   else if(control_type == 2){
     Serial.print(A.v);

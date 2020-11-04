@@ -1,5 +1,5 @@
 void Encoder_A(){
-  if(digitalRead(SPD_INT_A2) == HIGH){
+  if(digitalRead(SPD_INT_A2) == LOW){
     A.encoder = A.encoder + 1; //Forward
   }
   else{
@@ -17,7 +17,7 @@ void Encoder_B(){
 }
 
 void Encoder_C(){
-  if(digitalRead(SPD_INT_C2) == LOW){
+  if(digitalRead(SPD_INT_C2) == HIGH){
     C.encoder = C.encoder + 1; //Forward
   }
   else{

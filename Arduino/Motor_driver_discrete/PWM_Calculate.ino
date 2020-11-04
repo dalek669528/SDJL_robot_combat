@@ -6,13 +6,13 @@ void PWM_Calculate()
   C.speed_renew(timer);
   D.speed_renew(timer);
   
-  Vx = (A.v - B.v + C.v - D.v)/4;
+  Vx = (-A.v + B.v - C.v + D.v)/4;
   Vy = (A.v + B.v + C.v + D.v)/4;
-  w = (-A.v + B.v + C.v - D.v)/(4*(W+L));
+  w = (A.v + B.v - C.v - D.v)/(4*(W+L));
 
-  X += (A.delta_x - B.delta_x + C.delta_x - D.delta_x)/4;
+  X += (-A.delta_x + B.delta_x - C.delta_x + D.delta_x)/4;
   Y += (A.delta_x + B.delta_x + C.delta_x + D.delta_x)/4;
-  theta += ((-A.delta_x + B.delta_x + C.delta_x - D.delta_x)/(4*(W+L)));
+  theta += ((A.delta_x + B.delta_x - C.delta_x - D.delta_x)/(4*(W+L)));
 
 
 
@@ -20,10 +20,11 @@ void PWM_Calculate()
     Position_PID(1, 0, 4);
   }
   if(control_type >= 3){
-    A.desire_V =   desire_Vx + desire_Vy - desire_w*(W+L);
-    B.desire_V = - desire_Vx + desire_Vy + desire_w*(W+L);
-    C.desire_V =   desire_Vx + desire_Vy + desire_w*(W+L);
-    D.desire_V = - desire_Vx + desire_Vy - desire_w*(W+L);
+    A.desire_V = - desire_Vx + desire_Vy + desire_w*(W+L);
+    B.desire_V =   desire_Vx + desire_Vy + desire_w*(W+L);
+    C.desire_V = - desire_Vx + desire_Vy - desire_w*(W+L);
+    D.desire_V =   desire_Vx + desire_Vy - desire_w*(W+L);
+
   }
   
   

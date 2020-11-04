@@ -10,7 +10,6 @@ void Pin_init(){
   pinMode(MotorC2, OUTPUT);
   pinMode(MotorD1, OUTPUT);
   pinMode(MotorD2, OUTPUT);
-  pinMode(Motortest, OUTPUT);
 
   pinMode(SPD_INT_A1, INPUT_PULLUP);
   pinMode(SPD_INT_A2, INPUT);

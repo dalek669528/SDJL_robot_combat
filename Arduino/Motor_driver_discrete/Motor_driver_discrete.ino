@@ -16,16 +16,16 @@
 #include "wheel.h"
 
 //定义引脚名称 
-#define EN      13  //使能输出引脚，该引脚时高电平才允许控制直流电机，低电平时电机停止
+#define EN      A1  //使能输出引脚，该引脚时高电平才允许控制直流电机，低电平时电机停止
 #define AD      A0  //PWM输入引脚，读取电池电压
-#define MotorA1 7   //PWM输出引脚，控制直流电机A
-#define MotorA2 12  //Dig输出引脚，控制直流电机A
-#define MotorB1 8   //PWM输出引脚，控制直流电机B
-#define MotorB2 11  //Dig输出引脚，控制直流电机B
+#define MotorA1 8   //PWM输出引脚，控制直流电机A
+#define MotorA2 13  //Dig输出引脚，控制直流电机A
+#define MotorB1 9   //PWM输出引脚，控制直流电机B
+#define MotorB2 12  //Dig输出引脚，控制直流电机B
 #define MotorC1 10  //PWM输出引脚，控制直流电机C
-#define MotorC2 9   //Dig输出引脚，控制直流电机C
-#define MotorD1 5   //PWM输出引脚，控制直流电机D
-#define MotorD2 6   //Dig输出引脚，控制直流电机D
+#define MotorC2 11  //Dig输出引脚，控制直流电机C
+#define MotorD1 6   //PWM输出引脚，控制直流电机D
+#define MotorD2 7   //Dig输出引脚，控制直流电机D
 
 #define SPD_INT_A1 18
 #define SPD_INT_A2 14
@@ -59,10 +59,10 @@ uint32_t timer;
 uint32_t timer2;
 
 void setup(){
-  A.set_PID(2, 0.5, 2);
-  B.set_PID(2, 0.5, 2);
-  C.set_PID(2, 0.5, 2);
-  D.set_PID(2, 0.5, 2);
+  A.set_PID(1, 0.5, 2);
+  B.set_PID(1, 0.5, 2);
+  C.set_PID(1, 0.5, 2);
+  D.set_PID(1, 0.5, 2);
   timer = millis();
   Pin_init();
   Serial.begin(115200);
