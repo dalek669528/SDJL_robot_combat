@@ -42,7 +42,7 @@ def detect_color(img, threshold):
 	#print(time.time())
 	t = time.time()
 	red_mask   = getRed(canvas)
-	print(red_mask.shape)
+	#print(red_mask.shape)
 	#resize_ratio = 0.5
 	#resize_red_mask = cv2.resize(red_mask, (int(red_mask.shape[1]*resize_ratio), int(red_mask.shape[0]*resize_ratio)))
 	#cv2.imshow('temp', resize_red_mask)
@@ -55,8 +55,8 @@ def detect_color(img, threshold):
 	#resize_blue_mask = cv2.resize(green_mask, (int(red_mask.shape[1]*resize_ratio), int(red_mask.shape[0]*resize_ratio)))
 	contours_blue, _ = cv2.findContours(blue_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
-	print('10', time.time()-t)
-	t = time.time()
+	#print('10', time.time()-t)
+	#t = time.time()
 	roi_list = []
         red_boxes = np.zeros([np.size(contours_red), 4])
         blue_boxes = np.zeros([np.size(contours_blue), 4])
@@ -144,6 +144,6 @@ def detect_color(img, threshold):
 			roi_list.append((x1, y1, x2, y2))
 			cv2.putText(canvas, 'Blue', (x1, y1+14), cv2.FONT_HERSHEY_DUPLEX, 0.5, (255, 0, 0), 1, cv2.LINE_AA)
 
-	print('11', time.time()-t)
+	#print('11', time.time()-t)
 
 	return canvas, np.array(roi_list), np.array([red_count, green_count, blue_count])

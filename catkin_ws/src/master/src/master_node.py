@@ -69,8 +69,10 @@ if __name__ == '__main__':
     #master.stage_1()
     
     while(1):
-        master.publishArm('Pick', 21, 0)
-        time.sleep(10)
+        master.cmd.data = raw_input('INPUT (\'q\' to quit):')
+        master.pub_msg.publish(master.cmd)
+        if(master.cmd.data == "q"):
+            break
     
     try:
         rospy.spin()

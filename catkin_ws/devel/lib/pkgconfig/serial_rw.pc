@@ -1,8 +1,0 @@
-prefix=/home/sdjl/SDJL_robot_combat/catkin_ws/devel
-
-Name: serial_rw
-Description: Description of serial_rw
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 

@@ -73,9 +73,12 @@ class Camera(object):
 
         self.CameraRgbImage.publish(msg_rgb_frame)
         self.CameraDepthImage.publish(msg_depth_frame)
-        #print(msg_depth_frame.header.seq)
-      finally:
-        print('')
+        print('RGB seq: %d' % (msg_rgb_frame.header.seq))
+        print('Depth seq: %d' % (msg_depth_frame.header.seq))
+      except KeyboardInterrupt:
+        print("Shutting Down...")
+      #finally:
+      #  print('')
         #pipeline.stop()
 if __name__ == '__main__':
   rospy.init_node("CameraImagePublisher", anonymous=False)

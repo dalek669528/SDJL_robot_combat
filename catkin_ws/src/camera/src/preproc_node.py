@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import cv2
+import sys
 import rospy
 import numpy as np
 import pyrealsense2 as rs
@@ -28,11 +29,11 @@ class Preprocess(object):
         self.target_color = -1
         self.time = time.time()
         self.depth_scale = 0.0010000000474974513
-        self.sync_rgb = 0
-        self.sync_depth = 0
+        self.seq_rgb = 0
+        self.seq_depth = 0
         # Subscribers
-        self.RawRGB = rospy.Subscriber('RawRGB', Image, self.RGB_callback, queue_size=1)
-        self.RawDepth = rospy.Subscriber('RawDepth', Image, self.Depth_callback, queue_size=1)
+        self.RawRGB = rospy.Subscriber('RawRGB', Image, self.RGB_callback, queue_size=1, buff_size=2**24)
+        self.RawDepth = rospy.Subscriber('RawDepth', Image, self.Depth_callback, queue_size=None)
 
         # Publishers
         self.Color = rospy.Publisher('Color', Int32, queue_size=1) # publish max detected color
@@ -67,12 +68,12 @@ class Preprocess(object):
         removeBG_image = self.get_filted_image_RGB(meter)
         #detected_image, roi_array, color_count = detect_color(self.rgb_image, 0.3)
         detected_image, roi_array, color_count = detect_color(removeBG_image, 0.3)
-        cv2.imshow('Detected image', detected_image)
-        cv2.waitKey(1)
+        #cv2.imshow('Detected image', detected_image)
+        #cv2.waitKey(1)
         if roi_array.shape[0] == 0: # Nothing detected
             print('First stage: Nothing detected.')
             return 0
-        t = time.time()
+        #t = time.time()
 
         x1 = roi_array[:, 0]
         y1 = roi_array[:, 1]
@@ -82,23 +83,23 @@ class Preprocess(object):
         h = y2 - y1
         area = w * h
         max_index = np.argmax(area)
-        print('2', time.time()-t)
+        #print('2', time.time()-t)
         if max_index < color_count[0]:
             max_color = 0
         elif max_index < color_count[0] + color_count[1]:
             max_color = 1
         elif max_index < color_count.sum:
             max_color = 2
-        print(max_color)
+        #print('Max color in First stage: %d' % (max_color))
 
         max_roi = roi_array[max_index, :].reshape([1, 4])
         t = time.time()
         depth_img_array = crop_depth(max_roi, self.depth_image) # return detected array(x, y, depth)
-        print('3', time.time()-t)
+        #print('3', time.time()-t)
         t = time.time()
         coordination = calculate_coordinate(depth_img_array)
-        print('4', time.time()-t)
-        print(coordination) # array(x, y(depth), h)
+        #print('4', time.time()-t)
+        #print(coordination) # array(x, y(depth), h)
 
         #publish
         color_msg = Int32()
@@ -129,7 +130,7 @@ class Preprocess(object):
         sorted_index = np.argsort(depth_img_array[:, 2])
         closest = depth_img_array[sorted_index[0], :].reshape([1, 3])
         coordination = calculate_coordinate(closest)
-        print(coordination)
+        #print(coordination)
 
         #publish
         coord_msg = Coordination()
@@ -158,7 +159,7 @@ class Preprocess(object):
         max_roi = green_array[max_index, :].reshape([1, 4])
         depth_img_array = crop_depth(max_roi, self.depth_image)
         coordination = calculate_coordinate(depth_img_array)
-        print(coordination)
+        #print(coordination)
 
         #publish
         coord_msg = Coordination()
@@ -168,16 +169,27 @@ class Preprocess(object):
     def RGB_callback(self, data):
         try:
             raw_image = CvBridge().imgmsg_to_cv2(data, "8UC3")
-            print('RGB_callback: ' + data.header.seq)
+            self.seq_rgb = data.header.seq
+            print('RGB_callback: %d' % (self.seq_rgb))
+            print(sys.getsizeof(raw_image))
         except CvBridgeError as e:
             print(e)
+        cv2.imshow('rgb', raw_image)
+        cv2.waitKey(0)
+        #time.sleep(5)
+        #while(True):
+        #    if self.seq_depth > self.seq_rgb:
+        #        time.sleep(0.01)
+        #    else:
+        #        break
+
         self.rgb_image = raw_image.copy()
 
         # get detected image and an array of the coordination of the object
         
         self.time = time.time()        
         
-        print('1', time.time()-self.time)
+        #print('1', time.time()-self.time)
 
         self.stage_one = 1
         self.StageOne(self.stage_one) # return the coordination and the color of the largest object
@@ -191,7 +203,9 @@ class Preprocess(object):
     def Depth_callback(self, data):
         try:
             raw_image = CvBridge().imgmsg_to_cv2(data, "16UC1")
-            print(data.header)
+            self.seq_depth = data.header.seq
+            print('Depth_callback: %d' % (self.seq_depth))
+            print(sys.getsizeof(raw_image))
         except CvBridgeError as e:
             print(e)
 

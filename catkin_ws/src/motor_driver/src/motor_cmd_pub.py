@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 import rospy
-# from motor_driver.msg import Pwm
 from std_msgs.msg import String
 from sensor_msgs.msg import Joy
 from time import sleep
-import serial
 
 class Motor_pwm(object):
     def __init__(self):
@@ -32,10 +30,12 @@ class Motor_pwm(object):
 
     def input(self):
         while True:
-            self.cmd.data = raw_input('INPUT (\'q\' to quit):')
+            # self.cmd.data = raw_input('INPUT (\'q\' to quit):')
+            self.cmd.data = "4 " + str(0) + " "  + str(0) + " " + str(0)
             self.pub_msg.publish(self.cmd)
             if(self.cmd.data == "q"):
                 break
+            sleep(0.5)
             
 if __name__ == '__main__':
     rospy.init_node("motor_pwm",anonymous=False)

@@ -1,3 +1,5 @@
+*.png
+
 *~
 *.bag
 *.pyc
@@ -7,7 +9,16 @@
 .pydevproject
 .settings
 .remote-sync.json
+out/comptests
+config_db.cache
 ./caches/
+caches/
+catkin_ws/src/CMakeLists.txt
+.compmake_history.txt
+t
+out-comptests/
+out-make_videos.py
+out-programmatic.py
+out-programmatic
+out-detector-tests/
 .ipynb_checkpoints
-
-*.png
