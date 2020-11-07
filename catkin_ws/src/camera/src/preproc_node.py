@@ -168,7 +168,7 @@ class Preprocess(object):
     def RGB_callback(self, data):
         try:
             raw_image = CvBridge().imgmsg_to_cv2(data, "8UC3")
-            print(data.header.seq)
+            print('RGB_callback: ' + data.header.seq)
         except CvBridgeError as e:
             print(e)
         self.rgb_image = raw_image.copy()
