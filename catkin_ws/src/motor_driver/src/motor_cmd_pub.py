@@ -26,7 +26,7 @@ class Motor_pwm(object):
     def cbJoy(self, joy_msg):
         Vx = joy_msg.axes[0] * self.v_gain * (-1)
         Vy = joy_msg.axes[1] * self.v_gain
-        w = joy_msg.axes[3] * self.v_gain * 0.2
+        w = joy_msg.axes[3] * self.v_gain * (-0.2) * 180 / 3.14
         self.cmd.data = "3 " + str(Vx) + " "  + str(Vy) + " " + str(w)
         self.pub_msg.publish(self.cmd)
 

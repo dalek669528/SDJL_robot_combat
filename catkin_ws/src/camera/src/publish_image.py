@@ -26,17 +26,16 @@ class Camera(object):
     
     self.depth_sensor = self.profile.get_device().first_depth_sensor()
     self.depth_sensor.set_option(rs.option.visual_preset, 3)  # Set high accuracy for depth sensor
-    self.depth_scale = self.depth_sensor.get_depth_scale()
+    #self.depth_scale = self.depth_sensor.get_depth_scale()
     
-    self.clipping_distance_in_meters = 1
-    self.clipping_distance = self.clipping_distance_in_meters / self.depth_scale
-    print('depth_scale : ', self.depth_scale)
+    #self.clipping_distance_in_meters = 1
+    #self.clipping_distance = self.clipping_distance_in_meters / self.depth_scale
+    #print('depth_scale : ', self.depth_scale)
     self.align_to = rs.stream.color
     self.align = rs.align(self.align_to)
     
     # Publications
     self.CameraRgbImage   = rospy.Publisher('RawRGB',   Image, queue_size=1)
-    self.BgRemovedImage   = rospy.Publisher('RemoveBG',   Image, queue_size=1)
     self.CameraDepthImage = rospy.Publisher('RawDepth', Image, queue_size=1)
     
     # Subscriptions
@@ -66,37 +65,18 @@ class Camera(object):
         color_image = np.asanyarray(color_frame.get_data())
         flipped_rgb = cv2.flip(color_image, -1)
         flipped_depth = cv2.flip(depth_image, -1)
-        
-        grey_color = 0
-        depth_image_3d = np.dstack((flipped_depth, flipped_depth, flipped_depth))  # Depth image is 1 channel, color is 3 channels
-        bg_removed_rgb = np.where(
-            (depth_image_3d > self.clipping_distance) | (depth_image_3d <= 0),
-            grey_color,
-            flipped_rgb,
-        )
-
-        # filt too far and 0 distance value in depth image
-        filted_depth_image = np.where(
-            (flipped_depth > self.clipping_distance) | (flipped_depth <= 0),
-            grey_color,
-            flipped_depth,
-        )
-
+    
         rospy.loginfo('Publish image.') 
 
         msg_rgb_frame          = CvBridge().cv2_to_imgmsg(flipped_rgb)
-        msg_bg_removed_frame   = CvBridge().cv2_to_imgmsg(bg_removed_rgb)
-        msg_depth_frame        = CvBridge().cv2_to_imgmsg(filted_depth_image)
-        #msg_depth_frame        = CvBridge().cv2_to_imgmsg(depth_image)
-        
+        msg_depth_frame        = CvBridge().cv2_to_imgmsg(flipped_depth)        
 
         self.CameraRgbImage.publish(msg_rgb_frame)
-        self.BgRemovedImage.publish(msg_bg_removed_frame)
         self.CameraDepthImage.publish(msg_depth_frame)
-        
+        #print(msg_depth_frame.header.seq)
       finally:
         print('')
         #pipeline.stop()
 if __name__ == '__main__':
-  rospy.init_node("CameraImagePublisher",anonymous=False)
+  rospy.init_node("CameraImagePublisher", anonymous=False)
   camera = Camera()

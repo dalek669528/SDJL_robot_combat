@@ -23,47 +23,57 @@ class Preprocess(object):
         self.pipeline = rs.pipeline()
         self.rgb_image = np.zeros((360, 640))
         self.depth_image = np.zeros((360, 640))
-        self.removeBG_image = np.zeros((360, 640))
         self.stage_one = -1
         self.stage_three = -1
         self.target_color = -1
         self.time = time.time()
         self.depth_scale = 0.0010000000474974513
+        self.sync_rgb = 0
+        self.sync_depth = 0
         # Subscribers
         self.RawRGB = rospy.Subscriber('RawRGB', Image, self.RGB_callback, queue_size=1)
         self.RawDepth = rospy.Subscriber('RawDepth', Image, self.Depth_callback, queue_size=1)
-        self.RemoveBG = rospy.Subscriber('RemoveBG', Image, self.RemoveBG_callback, queue_size=1)
 
         # Publishers
         self.Color = rospy.Publisher('Color', Int32, queue_size=1) # publish max detected color
         self.Coord = rospy.Publisher('Coord', Coordination, queue_size=1) # publish coordination of max color
-        #self.Publisher_RGB = rospy.Publisher('CropedRGB', Image, queue_size=1) # RGB publish
-        #self.CroppedRBG = rospy.Publisher('CropedRGB', Image, queue_size=1) # Depth publish
-        #self. = rospy.Publisher('', Image, queue_size=1) # Removed BG publish
-
-    def get_filted_image(self, meter):
+        
+    def get_filted_image_RGB(self, meter): # get distance-filted RGB image
         clipping_distance = meter / self.depth_scale
         grey_color = 0
         depth_image_3d = np.dstack((self.depth_image, self.depth_image, self.depth_image))
-        bg_removed_rgb = np.where(
+        filted_image = np.where(
             (depth_image_3d > clipping_distance) | (depth_image_3d <= 0),
             grey_color,
             self.rgb_image,
         )
-        return bg_removed_rgb
+        return filted_image
+
+    #def get_filted_image_Depth(self, meter): # get distance-filted RGB image
+    #    clipping_distance = meter / self.depth_scale
+    #    grey_color = 0
+    #    filted_image = np.where(
+    #        (self.depth_image > clipping_distance) | (self.depth_image <= 0),
+    #        grey_color,
+    #        self.depth_image,
+    #    )
+    #    return filted_image
 
     def StageOne(self, enable):
+        if enable == -1:
+            return
+
         meter = 1
-        removeBG_image = self.get_filted_image(meter)
+        removeBG_image = self.get_filted_image_RGB(meter)
+        #detected_image, roi_array, color_count = detect_color(self.rgb_image, 0.3)
         detected_image, roi_array, color_count = detect_color(removeBG_image, 0.3)
         cv2.imshow('Detected image', detected_image)
         cv2.waitKey(1)
         if roi_array.shape[0] == 0: # Nothing detected
-            print('Nothing')
+            print('First stage: Nothing detected.')
             return 0
         t = time.time()
-        if enable < 0:
-            return 0
+
         x1 = roi_array[:, 0]
         y1 = roi_array[:, 1]
         x2 = roi_array[:, 2]
@@ -99,11 +109,13 @@ class Preprocess(object):
         self.Coord.publish(coord_msg)
 
     def StageTwo(self, color):
+        if color == -1:
+            return 0
         meter = 0.5
         removeBG_image = self.get_filted_image(meter)
         detected_image, roi_array, color_count = detect_color(removeBG_image, 0.3)
         if roi_array.shape[0] == 0: # Nothing detected
-            print('Nothing')
+            print('Second stage: Nothing detected.')
             return 0
         #remember to filt if green or blue are not detected!!!
         if (color == 1)&(color_count[1] > 0):
@@ -112,7 +124,6 @@ class Preprocess(object):
             target_array = roi_array[color_count[0]+color_count[1]:sum(color_count), :]
         else:
             return 0
-
 
         depth_img_array = crop_depth(target_array, self.depth_image)
         sorted_index = np.argsort(depth_img_array[:, 2])
@@ -126,13 +137,14 @@ class Preprocess(object):
         self.Coord.publish(coord_msg)
 
     def StageThree(self, enable):
+        if enable == -1:
+            return
+
         meter = 0.5
         removeBG_image = self.get_filted_image(meter)
         detected_image, roi_array, color_count = detect_color(removeBG_image, 0.3)
-        if roi_array.shape[0] == 0: # Nothing detected
-            print('Nothing')
-            return 0
-        if (enable < 0) | (color_count[1] == 0):
+        if (roi_array.shape[0] == 0) | (color_count[1] == 0): # Nothing detected
+            print('Third stage: Nothing detected.')
             return 0
         green_array = roi_array[color_count[0]:color_count[0]+color_count[1]:, :]
         x1 = green_array[:, 0]
@@ -156,6 +168,7 @@ class Preprocess(object):
     def RGB_callback(self, data):
         try:
             raw_image = CvBridge().imgmsg_to_cv2(data, "8UC3")
+            print(data.header.seq)
         except CvBridgeError as e:
             print(e)
         self.rgb_image = raw_image.copy()
@@ -178,18 +191,11 @@ class Preprocess(object):
     def Depth_callback(self, data):
         try:
             raw_image = CvBridge().imgmsg_to_cv2(data, "16UC1")
+            print(data.header)
         except CvBridgeError as e:
             print(e)
 
         self.depth_image = raw_image.copy()
-
-    def RemoveBG_callback(self, data):
-        try:
-            raw_image = CvBridge().imgmsg_to_cv2(data, "8UC3")
-        except CvBridgeError as e:
-            print(e)
-        self.removeBG_image = raw_image.copy()
-
 
 
 if __name__ == '__main__':

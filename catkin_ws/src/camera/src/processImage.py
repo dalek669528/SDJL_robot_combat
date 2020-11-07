@@ -21,13 +21,13 @@ class detectROI(object):
 	   
 		# Subscriptions
 			
-		#self.CameraRgbImage     = rospy.Subscriber('CameraRgbImage',   Image, self.CameraRgb_callback,   queue_size=1)
+		self.CameraRgbImage     = rospy.Subscriber('CameraRgbImage',   Image, self.CameraRgb_callback,   queue_size=1)
 		self.BgRemovedImage     = rospy.Subscriber('BgRemovedImage',   Image, self.BgRemoved_callback,   queue_size=1)
 		self.CameraDepthImage   = rospy.Subscriber('CameraDepthImage', Image, self.CameraDepth_callback, queue_size=1)
 
  	def CameraRgb_callback(self, data):
 		try:
-		  cv_image = CvBridge().imgmsg_to_cv2(data, "8UC3")
+		  self.cv_image = CvBridge().imgmsg_to_cv2(data, "8UC3")
 		except CvBridgeError as e:
 		  print(e)
 		
@@ -44,7 +44,8 @@ class detectROI(object):
                 flipped_image = cv2.flip(raw_image, -1)
                 
                 # detect image
-                imgs, roi_array = detect_color(flipped_image)
+                #imgs, roi_array = detect_color(flipped_image)
+                imgs, roi_array = detect_color(self.cv_image)
 		print(roi_array.shape)
 
                 cv2.imshow('detect image', imgs)
