@@ -1,8 +1,8 @@
-# Install script for directory: /home/dick/SDJL_robot_combat/catkin_ws/src/motor_driver
+# Install script for directory: /home/sdjl/SDJL_robot_combat/catkin_ws/src/motor_driver
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/dick/SDJL_robot_combat/catkin_ws/install")
+  set(CMAKE_INSTALL_PREFIX "/home/sdjl/SDJL_robot_combat/catkin_ws/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -37,23 +37,18 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
   set(CMAKE_CROSSCOMPILING "FALSE")
 endif()
 
-# Set default install directory permissions.
-if(NOT DEFINED CMAKE_OBJDUMP)
-  set(CMAKE_OBJDUMP "/usr/bin/objdump")
-endif()
-
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/dick/SDJL_robot_combat/catkin_ws/build/motor_driver/catkin_generated/installspace/motor_driver.pc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/sdjl/SDJL_robot_combat/catkin_ws/build/motor_driver/catkin_generated/installspace/motor_driver.pc")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/motor_driver/cmake" TYPE FILE FILES
-    "/home/dick/SDJL_robot_combat/catkin_ws/build/motor_driver/catkin_generated/installspace/motor_driverConfig.cmake"
-    "/home/dick/SDJL_robot_combat/catkin_ws/build/motor_driver/catkin_generated/installspace/motor_driverConfig-version.cmake"
+    "/home/sdjl/SDJL_robot_combat/catkin_ws/build/motor_driver/catkin_generated/installspace/motor_driverConfig.cmake"
+    "/home/sdjl/SDJL_robot_combat/catkin_ws/build/motor_driver/catkin_generated/installspace/motor_driverConfig-version.cmake"
     )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/motor_driver" TYPE FILE FILES "/home/dick/SDJL_robot_combat/catkin_ws/src/motor_driver/package.xml")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/motor_driver" TYPE FILE FILES "/home/sdjl/SDJL_robot_combat/catkin_ws/src/motor_driver/package.xml")
 endif()
 
