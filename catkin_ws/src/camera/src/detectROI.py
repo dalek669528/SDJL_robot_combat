@@ -55,61 +55,84 @@ def detect_color(img, threshold):
 	#resize_blue_mask = cv2.resize(green_mask, (int(red_mask.shape[1]*resize_ratio), int(red_mask.shape[0]*resize_ratio)))
 	contours_blue, _ = cv2.findContours(blue_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
-	#print('10', time.time()-t)
-	#t = time.time()
+	print('10', time.time()-t)
+	t = time.time()
 	roi_list = []
-        red_boxes = np.zeros([np.size(contours_red), 4])
-        blue_boxes = np.zeros([np.size(contours_blue), 4])
-        green_boxes = np.zeros([np.size(contours_green), 4])
-        red_count = 0
-        green_count = 0
-        blue_count = 0
+	red_boxes = []
+	blue_boxes = []
+	#green_boxes = np.zeros([np.size(contours_green), 4])
+	green_boxes = []
+	red_count = 0
+	green_count = 0
+	blue_count = 0
 
 	for ind, cnt in enumerate(contours_red):
-            x, y, w, h = cv2.boundingRect(cnt)
-            #x /= resize_ratio
-            #y /= resize_ratio
-            #w /= resize_ratio
-            #h /= resize_ratio
-            if(((w * h) > 500*4) & ((w * h) < 57600)):
-                red_boxes[ind, :] = [x, y, x+w, y+h]
-        
-        red_picks = non_max_suppression_slow(red_boxes, threshold)
-        for (startX, startY, endX, endY) in red_picks:
-                w = int(endX-startX)
-                h = int(endY-startY)
-                x = int(startX)
-                y = int(startY)
+		x, y, w, h = cv2.boundingRect(cnt)
+		#x /= resize_ratio
+		#y /= resize_ratio
+		#w /= resize_ratio
+		#h /= resize_ratio
+		if(((w * h) > 500*4) & ((w * h) < 57600)):
+			#red_boxes[ind, :] = [x, y, x+w, y+h]
+			red_boxes.append([x, y, x+w, y+h])
+	red_boxes = np.array(red_boxes)
+
+
+	print('r10', time.time()-t)
+	t = time.time()
+
+
+	red_picks = non_max_suppression_slow(red_boxes, threshold) if len(red_boxes) > 1 else red_boxes
+	print('r11', time.time()-t)
+	t = time.time()
+	for (startX, startY, endX, endY) in red_picks:
+		w = int(endX-startX)
+		h = int(endY-startY)
+		x = int(startX)
+		y = int(startY)
 
 		if(((w * h) > 500*4) & ((w * h) < 57600)):
 		#if((w * h) > 500*4):
-                        red_count += 1
+			red_count += 1
 			x1 = x - 10 if (x - 10) > 0 else 0
 			y1 = y - 10 if (y - 10) > 0 else 0
 			x2 = x+w+10 if (x+w+10) < dim[1] else dim[1]-1
 			y2 = y+h+10 if (y+h+10) < dim[0] else dim[0]-1
-                        cv2.rectangle(canvas, (x1, y1), (x2, y2), (0, 0, 255), 2)
+			cv2.rectangle(canvas, (x1, y1), (x2, y2), (0, 0, 255), 2)
 			roi_list.append((x1, y1, x2, y2))
 			cv2.putText(canvas, 'Red', (x1, y1+14), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
 
-	for ind, cnt in enumerate(contours_green):
-            x, y, w, h = cv2.boundingRect(cnt)
-            #x /= resize_ratio
-            #y /= resize_ratio
-            #w /= resize_ratio
-            #h /= resize_ratio
-            green_boxes[ind, :] = [x, y, x+w, y+h]
-       
-        green_picks = non_max_suppression_slow(green_boxes, threshold)
-        for (startX, startY, endX, endY) in green_picks:
-                w = int(endX-startX)
-                h = int(endY-startY)
-                x = int(startX)
-                y = int(startY)
+	print('r12', time.time()-t)
+	t = time.time()
 
-                if(((w * h) > 500*4) & ((w * h) < 57600)):
+
+	for ind, cnt in enumerate(contours_green):
+		x, y, w, h = cv2.boundingRect(cnt)
+		#x /= resize_ratio
+		#y /= resize_ratio
+		#w /= resize_ratio
+		#h /= resize_ratio
+		if(((w * h) > 500*4) & ((w * h) < 57600)):
+			#green_boxes[ind, :] = [x, y, x+w, y+h]
+			green_boxes.append([x, y, x+w, y+h])
+	green_boxes = np.array(green_boxes)
+	print('g10', time.time()-t)
+	t = time.time()
+
+	green_picks = non_max_suppression_slow(green_boxes, threshold) if len(green_boxes) > 1 else green_boxes
+
+	print('g11', time.time()-t)
+	t = time.time()
+
+	for (startX, startY, endX, endY) in green_picks:
+		w = int(endX-startX)
+		h = int(endY-startY)
+		x = int(startX)
+		y = int(startY)
+
+		if(((w * h) > 500*4) & ((w * h) < 57600)):
 		#if((w * h) > 500*4):
-                        green_count += 1
+			green_count += 1
 			x1 = x - 10 if (x - 10) > 0 else 0
 			y1 = y - 10 if (y - 10) > 0 else 0
 			x2 = x+w+10 if (x+w+10) < dim[1] else dim[1]-1
@@ -118,31 +141,46 @@ def detect_color(img, threshold):
 			roi_list.append((x1, y1, x2, y2))
 			cv2.putText(canvas, 'Green', (x1, y1+14), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
 
+
+	print('g12', time.time()-t)
+	t = time.time()
+
+
 	for ind, cnt in enumerate(contours_blue):
-            x, y, w, h = cv2.boundingRect(cnt)
-            #x /= resize_ratio
-            #y /= resize_ratio
-            #w /= resize_ratio
-            #h /= resize_ratio
-   
-            blue_boxes[ind, :] = [x, y, x+w, y+h]
+		x, y, w, h = cv2.boundingRect(cnt)
+		#x /= resize_ratio
+		#y /= resize_ratio
+		#w /= resize_ratio
+		#h /= resize_ratio
+		if(((w * h) > 500*4) & ((w * h) < 57600)):
+			#blue_boxes[ind, :] = [x, y, x+w, y+h]
+			blue_boxes.append([x, y, x+w, y+h])
+	blue_boxes = np.array(blue_boxes)
 
-        blue_picks = non_max_suppression_slow(blue_boxes, threshold)
-        for (startX, startY, endX, endY) in blue_picks:
-                w = int(endX-startX)
-                h = int(endY-startY)
-                x = int(startX)
-                y = int(startY)
+	print('b10', time.time()-t)
+	t = time.time()
 
-                if(((w * h) > 500*4) & ((w * h) < 57600)):
-                        blue_count += 1
+	blue_picks = non_max_suppression_slow(blue_boxes, threshold) if len(blue_boxes) > 1 else blue_boxes
+	print('b11', time.time()-t)
+	t = time.time()
+
+	for (startX, startY, endX, endY) in blue_picks:
+		w = int(endX-startX)
+		h = int(endY-startY)
+		x = int(startX)
+		y = int(startY)
+
+		if(((w * h) > 500*4) & ((w * h) < 57600)):
+			blue_count += 1
 			x1 = x - 10 if (x - 10) > 0 else 0
 			y1 = y - 10 if (y - 10) > 0 else 0
 			x2 = x+w+10 if (x+w+10) < dim[1] else dim[1]-1
 			y2 = y+h+10 if (y+h+10) < dim[0] else dim[0]-1
-                        cv2.rectangle(canvas, (x1, y1), (x2, y2), (255, 0, 0), 2)
+			cv2.rectangle(canvas, (x1, y1), (x2, y2), (255, 0, 0), 2)
 			roi_list.append((x1, y1, x2, y2))
 			cv2.putText(canvas, 'Blue', (x1, y1+14), cv2.FONT_HERSHEY_DUPLEX, 0.5, (255, 0, 0), 1, cv2.LINE_AA)
+	print('b12', time.time()-t)
+	t = time.time()
 
 	#print('11', time.time()-t)
 

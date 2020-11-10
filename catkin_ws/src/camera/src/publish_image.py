@@ -28,14 +28,11 @@ class Camera(object):
     self.depth_sensor.set_option(rs.option.visual_preset, 3)  # Set high accuracy for depth sensor
     #self.depth_scale = self.depth_sensor.get_depth_scale()
     
-    #self.clipping_distance_in_meters = 1
-    #self.clipping_distance = self.clipping_distance_in_meters / self.depth_scale
-    #print('depth_scale : ', self.depth_scale)
     self.align_to = rs.stream.color
     self.align = rs.align(self.align_to)
     
     # Publications
-    self.CameraRgbImage   = rospy.Publisher('RawRGB',   Image, queue_size=1)
+    self.CameraRgbImage = rospy.Publisher('RawRGB', Image, queue_size=1)
     self.CameraDepthImage = rospy.Publisher('RawDepth', Image, queue_size=1)
     
     # Subscriptions
@@ -77,9 +74,7 @@ class Camera(object):
         print('Depth seq: %d' % (msg_depth_frame.header.seq))
       except KeyboardInterrupt:
         print("Shutting Down...")
-      #finally:
-      #  print('')
-        #pipeline.stop()
+
 if __name__ == '__main__':
   rospy.init_node("CameraImagePublisher", anonymous=False)
   camera = Camera()

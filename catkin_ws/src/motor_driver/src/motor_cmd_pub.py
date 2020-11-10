@@ -30,8 +30,8 @@ class Motor_pwm(object):
 
     def input(self):
         while True:
-            # self.cmd.data = raw_input('INPUT (\'q\' to quit):')
-            self.cmd.data = "4 " + str(0) + " "  + str(0) + " " + str(0)
+            self.cmd.data = raw_input('INPUT (\'q\' to quit):')
+            # self.cmd.data = "4 " + str(0) + " "  + str(0) + " " + str(0)
             self.pub_msg.publish(self.cmd)
             if(self.cmd.data == "q"):
                 break
