@@ -1,32 +1,116 @@
-#ifndef WHEEL_H
-#define WHEEL_H
+#ifndef _WHEEL_H_
+#define _WHEEL_H_
+
 #define CPR 390 //count per round
 #define TIRE_RADIUS 3 //3cm
+#define MAX_PWM 100
+#define W 12.5
+#define L 10
+
 class Wheel{
   public:
     int pwm;
     long encoder, encoder_past;
-    double Kp, Ki, Kd;
-    double x, w, v;
+    float Kp, Ki, Kd;
+    float delta_x, w, v;
+    float desire_V;
     uint32_t SpeedTimer;
+    float err, err_sum, err_past;
     Wheel(){
       pwm = encoder = encoder_past = 0;
       Kp = Ki = Kd = 0;
-      x = w = v = 0;
+      delta_x = w = v = 0;
+      err = err_sum = err_past = 0;
     }
     Wheel(int p){
       pwm = p;
       encoder = encoder_past = 0;
       Kp = Ki = Kd = 0;
-      x = w = v = 0;
+      delta_x = w = v = 0;
       SpeedTimer = millis();
     }
-    void speed_renew(){
-      x = (encoder - encoder_past) / CPR * PI * 2 * TIRE_RADIUS;
-      v = (encoder - encoder_past)/CPR*PI*2*TIRE_RADIUS/(millis()-SpeedTimer)*1000; //cm/sec
-      SpeedTimer = millis();
+    void set_PID(float p, float i, float d){
+      Kp = p;
+      Ki = i;
+      Kd = d;
+    }
+    void speed_renew(uint32_t timer){
+      delta_x = (float)(encoder - encoder_past) / CPR * PI * 2 * TIRE_RADIUS;
+      v = delta_x / (timer-SpeedTimer)*1000; //cm/sec
+      SpeedTimer = timer;
       encoder_past = encoder;
     }
+    void pwm_calculate(){
+      float desire_V_temp = desire_V;
+      if(desire_V_temp > 25){
+        desire_V_temp = 25;
+      }
+      else if(desire_V_temp < -25){
+        desire_V_temp = -25;
+      }
+      err = desire_V_temp - v;
+      err_sum += err;
+      pwm = Kp * err + Ki * err_sum + Kd * (err - err_past);
+      err_past = err;
+    }
+    void reset_error(){
+      err = 0;
+      err_sum = 0;
+      err_past = 0;
+      pwm = 0;
+    }
 };
+
+class Car{
+public:
+  
+  Wheel A, B, C, D;
+  float X = 0, Y = 0, theta = 0;
+  float Vx = 0, Vy = 0, w = 0;
+  float desire_X = 0, desire_Y = 0, desire_theta = 0;
+  float desire_Vx = 0, desire_Vy = 0, desire_w = 0;
+  
+  float pos_err[3] = {0, 0, 0};
+  float pos_err_sum[3] = {0, 0, 0};
+  float pos_err_past[3] = {0, 0, 0};
+  float p_Kp = 1, p_Ki = 0, p_Kd = 4; 
+
+  int control_type = 0, past_control_type = 0;
+
+  Car(){
+    A.set_PID(1, 0.5, 2);
+    B.set_PID(1, 0.5, 2);
+    C.set_PID(1, 0.5, 2);
+    D.set_PID(1, 0.5, 2);
+  }
+  void Car_Control();
+  void PWM_Calculate();
+  void Serial_r(String str);
+  void printInfo();
+  void position_PID();
+  void car_stop(){
+    A.desire_V = B.desire_V = C.desire_V = D.desire_V = 0;
+  }
+  void reset_err(){
+    A.reset_error();
+    B.reset_error();
+    C.reset_error();
+    D.reset_error();
+    pos_err[0] = pos_err[1] = pos_err[2] = 0;
+    pos_err_past[0] = pos_err_past[1] = pos_err_past[2] = 0;
+    pos_err_sum[0] = pos_err_sum[1] = pos_err_sum[2] = 0;
+  }
+  void car_reset(){
+    car_stop();
+    reset_err();
+    X = 0, Y = 0, theta = 0;
+    Vx = 0, Vy = 0, w = 0;
+    desire_X = 0, desire_Y = 0, desire_theta = 0;
+    desire_Vx = 0, desire_Vy = 0, desire_w = 0;
+  }
+};
+
+
+
 
 #endif

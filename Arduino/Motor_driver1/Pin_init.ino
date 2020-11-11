@@ -10,14 +10,7 @@ void Pin_init(){
   pinMode(MotorC2, OUTPUT);
   pinMode(MotorD1, OUTPUT);
   pinMode(MotorD2, OUTPUT);
-  
-  pinMode(Motor_S1, OUTPUT);
-  pinMode(Motor_S2, OUTPUT);
-  
-  pinMode(SERVO1_PIN, OUTPUT);
-  pinMode(SERVO2_PIN, OUTPUT);
-  pinMode(SERVO3_PIN, OUTPUT);
-  pinMode(SERVO4_PIN, OUTPUT);
+  pinMode(Motortest, OUTPUT);
 
   pinMode(SPD_INT_A1, INPUT_PULLUP);
   pinMode(SPD_INT_A2, INPUT);
@@ -27,8 +20,7 @@ void Pin_init(){
   pinMode(SPD_INT_C2, INPUT);
   pinMode(SPD_INT_D1, INPUT_PULLUP);
   pinMode(SPD_INT_D2, INPUT);
-  pinMode(INT_S1, INPUT_PULLUP);
-  pinMode(INT_S1, INPUT);
+  
   
   //初始化TBN单/双路驱动
   digitalWrite(EN, 1);

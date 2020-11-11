@@ -1,77 +1,60 @@
-//////////////////TBN四路驱动引脚接线///////////////////////////
-//电机-------------TBN四路驱动丝印标识----------ArduinoUNO主板引脚
-//电机-------------DATA_ABC牛角座-----------ArduinoUNO主板引脚
-//                     EN(使能)------------10
-//                     5V-----------------5V
-//                     AD-----------------A0
-//                     G------------------GND
-//                     A1-----------------6
-//                     A2-----------------7
-//                     B1-----------------9
-//                     B2-----------------8
-//直流电机A-------------MotorA
-//直流电机B-------------MotorB
-//电机-------------TBN四路驱动丝印标识----------ArduinoUNO主板引脚
-
-#include "wheel.h"
+#include "Wheel.h"
+#include "Arm.h"
 
 //定义引脚名称 
-#define EN      15  //使能输出引脚，该引脚时高电平才允许控制直流电机，低电平时电机停止
+#define EN      A1  //使能输出引脚，该引脚时高电平才允许控制直流电机，低电平时电机停止
 #define AD      A0  //PWM输入引脚，读取电池电压
-#define MotorA1 12  //PWM输出引脚，控制直流电机A
-#define MotorA2 11  //Dig输出引脚，控制直流电机A
-#define MotorB1 10  //PWM输出引脚，控制直流电机B
-#define MotorB2 9   //Dig输出引脚，控制直流电机B
-#define MotorC1 8   //PWM输出引脚，控制直流电机C
-#define MotorC2 7   //Dig输出引脚，控制直流电机C
+#define MotorA1 8   //PWM输出引脚，控制直流电机A
+#define MotorA2 13  //Dig输出引脚，控制直流电机A
+#define MotorB1 9   //PWM输出引脚，控制直流电机B
+#define MotorB2 12  //Dig输出引脚，控制直流电机B
+#define MotorC1 10  //PWM输出引脚，控制直流电机C
+#define MotorC2 11  //Dig输出引脚，控制直流电机C
 #define MotorD1 6   //PWM输出引脚，控制直流电机D
-#define MotorD2 5   //Dig输出引脚，控制直流电机D
-#define Motortest 13   //Dig输出引脚，控制直流电机D
+#define MotorD2 7   //Dig输出引脚，控制直流电机D
 
-#define SPD_INT_A1 3
-#define SPD_INT_A2 4
-#define SPD_INT_B1 2
-#define SPD_INT_B2 14
-#define SPD_INT_C1 18
-#define SPD_INT_C2 17
-#define SPD_INT_D1 19
-#define SPD_INT_D2 20
+#define SPD_INT_A1 18
+#define SPD_INT_A2 14
+#define SPD_INT_B1 19
+#define SPD_INT_B2 15
+#define SPD_INT_C1 20
+#define SPD_INT_C2 16
+#define SPD_INT_D1 21
+#define SPD_INT_D2 17
+
+#define SERVO1_PIN A2
+#define SERVO2_PIN A3
+#define SERVO3_PIN A4
+#define SERVO4_PIN A5
+
+#define INT_S1 2
+#define INT_S2 3
+#define Motor_S1 4
+#define Motor_S2 5
 
 
+Car car;
+Arm arm;
 
-Wheel A(50), B(50), C(50), D(50);
-
-int period = 1;
-int pwm_test = 0;
-int t = 0;
-
+int period = 50;
 uint32_t timer;
+uint32_t timer2;
 
 void setup(){
-  timer = micros();
-//  angle_dt = micros();
-//  SendTimer = millis();
-//  ReceiveTimer = millis();
-//  SendToPCTimer = millis();
-//  SpeedTimer = millis();
-//  StopTimer = millis();
+  timer = millis();
   Pin_init();
   Serial.begin(115200);
   while (!Serial) {}  // wait for serial port to connect.
 }
 
 void loop() {
-  if(millis() > timer + period){
+  timer2 = millis();
+  if(timer2 >= timer + period){
+    timer = (timer2/(period))*(period);
     Serial_rw();
-    timer = millis();
-    if(t >= 50){
-      t = 0;
-      pwm_test += (pwm_test>245? 255:pwm_test+10);
-    }
-    analogWrite(Motortest, pwm_test>0? pwm_test:-pwm_test);
-    t++;
+    car.PWM_Calculate();
+    arm.Routine();
+    arm.Arm_Control();
   }
-//  PWM_Calculate();
-  Car_Control();
-
+  car.Car_Control();
 }
