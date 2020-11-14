@@ -35,6 +35,9 @@ class Master(object):
         #Arm variable
         self.arm_y = 0
         self.arm_z = 0
+        self.arm_action_list =  [['Stamp'],
+                                ['Pick','Place'],
+                                ['Push']]
 
         #Camera variable
         self.master_info = Master_info()
@@ -66,7 +69,6 @@ class Master(object):
                   ['x','-35','y','350','x','0']]
 
         self.map3=[['y','244.76','x','-70','y','306.16','x','0']]
-        self.move_number = [4, 10, 1]
         self.maps.append([self.map1, self.map2, self.map3])
         self.maps = self.maps[0]
 
@@ -184,15 +186,19 @@ class Master(object):
     def stage_1(self):
         finish_flag = False
         self.stage_index = 0
+        move_number = len(self.maps[self.stage_index])
+        arm_action_number = len(self.arm_action_list[self.stage_index])
+        print('Get in Stage ' + str(self.stage_index) + ',  move_munber : ' + str(move_number) + ' arm_action_number : ' + str(arm_action_number))
         
         # self.pub_master_info_msg.publish(self.stage_index) # publish current stage to pre_proc.py to change between rgb/BGremoved_rgb
         move_count = 0
+        arm_action_count = 0
         #movement = ['Move', 'CheckAndModify', 'MoveArm'] 
         movement = 'Move'
         while finish_flag == False:
             print('\nStage 1 : ' + movement)
             if movement == 'Move':
-                if move_count < self.move_number[self.stage_index]:
+                if move_count < arm_action_number:
                     print('Move task : '+  str(move_count))
                     #self.Move2PosS13(self.stage_index,move_count)
                     move_count += 1
@@ -211,8 +217,10 @@ class Master(object):
                 # self.stop()
                 # raw_input('Enter !')
             elif movement == 'MoveArm':
-                print('Stamp '+ str(self.arm_y) + ' ' + str(self.arm_z))
-                self.publishArm('Stamp', self.arm_y, self.arm_z)
+                arm_action = self.arm_action_list[self.stage_index][arm_action_count % arm_action_number]
+                print(arm_action + str(self.arm_y) + ' ' + str(self.arm_z))
+                self.publishArm(arm_action, self.arm_y, self.arm_z)
+                arm_action_count += 1
                 movement = 'Move'
       
 if __name__ == '__main__':
