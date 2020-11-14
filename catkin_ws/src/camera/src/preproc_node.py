@@ -9,7 +9,8 @@ import time
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
 from std_msgs.msg import Int32, Float32MultiArray, Int32MultiArray
-from camera.msg import Coordination
+from camera.msg import Coordination, Master_info
+from geometry_msgs.msg import Pose2D
 from detectROI import detect_color
 from crop_ROI  import crop_depth
 from calculateXY import calculate_coordinate
@@ -24,6 +25,7 @@ class Preprocess(object):
         self.pipeline = rs.pipeline()
         self.rgb_image = np.zeros((360, 640))
         self.depth_image = np.zeros((360, 640))
+        self.stage_index = -1
         self.stage_one = -1
         self.stage_three = -1
         self.target_color = -1
@@ -32,9 +34,20 @@ class Preprocess(object):
         self.seq_rgb = 0
         self.seq_depth = 0
         self.frame_loss = 1
+        self.pos_x = 0
+        self.right_bound = 120 #(mm)
+        self.left_bound = -820 #(mm)
+        self.detect_bounding_x1 = 0
+        self.detect_bounding_x2 = 0
+        self.detect_bounding_y1 = 0
+        self.detect_bounding_y2 = 0
+        self.open_flag = 0
         # Subscribers
+        self.master_info = rospy.Subscriber('master_info', Master_info, self.master_info_callback, queue_size=1)
+        self.GetPos = rospy.Subscriber('position', Pose2D, self.GetPos_callback, queue_size=1)
         self.RawRGB = rospy.Subscriber('RawRGB', Image, self.RGB_callback, queue_size=1)
         self.RawDepth = rospy.Subscriber('RawDepth', Image, self.Depth_callback, queue_size=1)
+
 
         # Publishers
         self.Color = rospy.Publisher('Color', Int32, queue_size=1) # publish max detected color
@@ -56,22 +69,65 @@ class Preprocess(object):
             )
         return filted_image
 
-    def StageOne(self, enable, rgb_image, depth_image):
-        if enable == -1:
-            return
-
+    def StageOne(self, rgb_image, depth_image):
+        color_msg = Int32()
+        coord_msg = Coordination()
         meter = 1
+        detected_image, roi_array, color_count = detect_color(rgb_image, 0.3)
+        #detected_image, roi_array, color_count = detect_color(removeBG_rgb, 0.3)
+
+
         removeBG_rgb = self.get_filted_image(meter, rgb_image, depth_image, 'rgb')
-        removeBG_depth = self.get_filted_image(meter, rgb_image, depth_image, 'depth')
-        detected_image, roi_array, color_count = detect_color(removeBG_rgb, 0.3)
-        #cv2.imshow('Detected image', detected_image)
-        #cv2.waitKey(1)
+        cv2.imshow('removeBG_rgb', removeBG_rgb)
+
+        cv2.imshow('Detected image', detected_image)
+        cv2.waitKey(1)
         if roi_array.shape[0] == 0: # Nothing detected
             print('First stage: Nothing detected.')
+            coord_msg.data = [0, -1, 0]
+            self.Coord.publish(coord_msg)
             return 0
 
-        t = time.time()
+        # t = time.time()
 
+        # x1 = roi_array[:, 0]
+        # y1 = roi_array[:, 1]
+        # x2 = roi_array[:, 2]
+        # y2 = roi_array[:, 3]
+        # w = x2 - x1
+        # h = y2 - y1
+        # area = w * h
+        # max_index = np.argmax(area)
+        # # print('2', time.time()-t)
+        # if max_index < color_count[0]:
+        #     max_color = 0
+        #     max_color_string = 'red'
+        # elif max_index < color_count[0] + color_count[1]:
+        #     max_color = 1
+        #     max_color_string = 'green'
+        # elif max_index < color_count.sum:
+        #     max_color = 2
+        #     max_color_string = 'blue'
+        #print('Max color in First stage: %d' % (max_color))
+
+        # max_roi = roi_array[max_index, :].reshape([1, 4])
+        # # t = time.time()
+        # depth_img_array = crop_depth(max_roi, removeBG_depth) # return detected array(x, y, depth)
+        # # print('3', time.time()-t)
+        # # t = time.time()
+        # coordination = calculate_coordinate(depth_img_array)
+        # # print('4', time.time()-t)
+        # print(coordination) # array(x, y(depth), h)
+
+        # depth_image_array = crop_depth(roi_array, removeBG_depth)
+        depth_image_array = crop_depth(roi_array, self.depth_image)
+        coordination = calculate_coordinate(depth_image_array)
+
+        self.x = 0
+        bound_filter = ((coordination > (self.left_bound - self.pos_x)) & (coordination < (self.right_bound - self.pos_x)))[:,0]
+        # print(coordination)
+        # print('bound filter : ', bound_filter) 
+        roi_array[np.logical_not(bound_filter), 0] = roi_array[np.logical_not(bound_filter), 2]
         x1 = roi_array[:, 0]
         y1 = roi_array[:, 1]
         x2 = roi_array[:, 2]
@@ -80,41 +136,34 @@ class Preprocess(object):
         h = y2 - y1
         area = w * h
         max_index = np.argmax(area)
-        print('2', time.time()-t)
         if max_index < color_count[0]:
             max_color = 0
+            max_color_string = 'red'
         elif max_index < color_count[0] + color_count[1]:
             max_color = 1
+            max_color_string = 'green'
         elif max_index < color_count.sum:
             max_color = 2
-        #print('Max color in First stage: %d' % (max_color))
-
-        max_roi = roi_array[max_index, :].reshape([1, 4])
-        t = time.time()
-        depth_img_array = crop_depth(max_roi, removeBG_depth) # return detected array(x, y, depth)
-        print('3', time.time()-t)
-        t = time.time()
-        coordination = calculate_coordinate(depth_img_array)
-        print('4', time.time()-t)
-        #print(coordination) # array(x, y(depth), h)
+            max_color_string = 'blue'
 
         #publish
-        color_msg = Int32()
-        coord_msg = Coordination()
         color_msg.data = max_color
-        coord_msg.data = coordination.flatten().tolist()
+        coord_msg.data = coordination[max_index, :].flatten().tolist()
+        coord_msg.color = max_color_string
         self.Color.publish(color_msg)
         self.Coord.publish(coord_msg)
+        
+        print(coordination)
 
-    def StageTwo(self, color, rgb_image, depth_image):
-        if color == -1:
-            return 0
+    def StageTwo(self, rgb_image, depth_image):
         meter = 0.5
         removeBG_rgb = self.get_filted_image(meter, rgb_image, depth_image, 'rgb')
         removeBG_depth = self.get_filted_image(meter, rgb_image, depth_image, 'depth')
-        detected_image, roi_array, color_count = detect_color(removeBG_rgb, 0.3)
+        detected_image, roi_array, color_count = detect_color(removeBG_rgb, 0.3, red = False)
         if roi_array.shape[0] == 0: # Nothing detected
             print('Second stage: Nothing detected.')
+            coord_msg.data = [0, -1, 0]
+            self.Coord.publish(coord_msg)
             return 0
         #remember to filt if green or blue are not detected!!!
         if (color == 1)&(color_count[1] > 0):
@@ -135,16 +184,15 @@ class Preprocess(object):
         coord_msg.data = coordination.flatten().tolist()
         self.Coord.publish(coord_msg)
 
-    def StageThree(self, enable, rgb_image, depth_image):
-        if enable == -1:
-            return
-
+    def StageThree(self, rgb_image, depth_image):
         meter = 0.5
         removeBG_rgb = self.get_filted_image(meter, rgb_image, depth_image, 'rgb')
         removeBG_depth = self.get_filted_image(meter, rgb_image, depth_image, 'depth')
-        detected_image, roi_array, color_count = detect_color(removeBG_rgb, 0.3)
-        if (roi_array.shape[0] == 0) | (color_count[1] == 0): # Nothing detected
+        detected_image, roi_array, color_count = detect_color(removeBG_rgb, 0.3, red = False, blue=False)
+        if color_count[1] == 0: # Green 'E' is not detected
             print('Third stage: Nothing detected.')
+            coord_msg.data = [0, -1, 0]
+            self.Coord.publish(coord_msg)
             return 0
         green_array = roi_array[color_count[0]:color_count[0]+color_count[1]:, :]
         x1 = green_array[:, 0]
@@ -167,34 +215,40 @@ class Preprocess(object):
 
     def RGB_callback(self, data):
         try:
+            if not self.open_flag:
+                return
             self.seq_rgb = data.header.seq
             #print('RGB_callback: %d' % (self.seq_rgb))
             if (self.seq_depth - self.seq_rgb) > self.frame_loss:
-                print('drop frame:', self.seq_rgb)
+                # print('drop frame:', self.seq_rgb)
                 return
             else:
-                print('seq: rgb/depth', self.seq_rgb, self.seq_depth)
+                # print('seq: rgb/depth', self.seq_rgb, self.seq_depth)
                 rgb_image = CvBridge().imgmsg_to_cv2(data, "8UC3")
                 depth_image = self.depth_image.copy()
         except CvBridgeError as e:
             print(e)
-        cv2.imshow('rgb', raw_image)
-        cv2.waitKey(0)
+        # cv2.imshow('rgb', rgb_image)
+        # cv2.waitKey(1)
 
         self.rgb_image = rgb_image.copy()
 
         # get detected image and an array of the coordination of the object
         
-        self.t = time.time()        
+        # self.t = time.time()        
         
         #print('1', time.time()-self.time)
-
-        self.stage_one = 1
-        self.StageOne(self.stage_one, rgb_image, depth_image) # return the coordination and the color of the largest object
-        #self.target_color = 2
-        self.StageTwo(self.target_color, rgb_image, depth_image) # return the closest coordination of target color
-        #self.stage_three = 1
-        self.StageThree(self.stage_three, rgb_image, depth_image) # return the coordination of the largest green object
+        rgb_image[:, 0:self.detect_bounding_x1] = [0, 0, 0]
+        rgb_image[:, rgb_image.shape[1]-self.detect_bounding_x2:rgb_image.shape[1]] = [0, 0, 0]
+        rgb_image[0:self.detect_bounding_y1, :] = [0, 0, 0]
+        rgb_image[rgb_image.shape[0]-self.detect_bounding_y2:rgb_image.shape[0], :] = [0, 0, 0]
+        self.stage_index = 0
+        if self.stage_index == 0:
+            self.StageOne(rgb_image, depth_image) # return the coordination and the color of the largest object
+        elif self.stage_index == 1:
+            self.StageTwo(rgb_image, depth_image) # return the closest coordination of target color
+        elif self.stage_index == 2:
+            self.StageThree(rgb_image, depth_image) # return the coordination of the largest green object
 
         #return 0
 
@@ -209,10 +263,34 @@ class Preprocess(object):
 
         self.depth_image = depth_image.copy()
 
+    def GetPos_callback(self, data):
+        try:
+            self.pos_x = data.x
+        except:
+            print("GetPos callback error")
+
+    def master_info_callback(self, data):
+        try:
+            self.stage_index = data.stage
+            self.detect_bounding_x1 = data.bounding[0]
+            self.detect_bounding_x2 = data.bounding[1]
+            self.detect_bounding_y1 = data.bounding[2]
+            self.detect_bounding_y2 = data.bounding[3]
+            self.open_flag = data.open_flag
+        except:
+            print('Something wrong in Master_info Subscriber')
 
 if __name__ == '__main__':
     rospy.init_node("ImagePreprocess",anonymous=False)
     preprocess = Preprocess()
+    
+    preprocess.stage_index = 0
+    preprocess.detect_bounding_x1 = 100
+    preprocess.detect_bounding_x2 = 100
+    preprocess.detect_bounding_y1 = 0
+    preprocess.detect_bounding_y2 = 100
+    preprocess.open_flag = 1
+    
     try:
         rospy.spin()
     except KeyboardInterrupt:

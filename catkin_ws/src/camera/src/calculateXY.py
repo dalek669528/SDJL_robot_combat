@@ -25,7 +25,7 @@ def convert_depth_to_phys_coord_using_realsense(x, y, depth):
 
 def calculate_coordinate(depth_img_list):
     CAMERAS_OFFSET    = -35
-    RGB_CAMERA_OFFSET = 148	
+    RGB_CAMERA_OFFSET = -2
     output_list = []
     for i in range(depth_img_list.shape[0]):
         #input argument : y(h), x(w), depth

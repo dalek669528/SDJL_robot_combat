@@ -15,8 +15,8 @@ class Arm_driver(object):
         self.sub_cmd = rospy.Subscriber("arm_cmd", String, self.cbCMD, queue_size=1)
         
         self.ser = serial.Serial(
-            port='/dev/ttyACM1',
-            baudrate = 9600,
+            port='/dev/ttyACM0',
+            baudrate = 115200,
             parity=serial.PARITY_NONE,
             stopbits=serial.STOPBITS_ONE,
             bytesize=serial.EIGHTBITS,
@@ -34,7 +34,7 @@ class Arm_driver(object):
     def moveArm(self, action, y, z):
         #action_list = ['Stamp', 'Pick', 'Place', 'Push']
         action_flag = False
-        action_dict = {'Stamp': [[211], [0, 0], [0]],    'Pick': [[221], [20, 27], [-14]], 
+        action_dict = {'Stamp': [[222], [18, 24], [20]], 'Pick': [[221], [20, 27], [-14]], 
                        'Place': [[222], [18, 24], [20]], 'Push': [[231], [0, 0], [0]]}
         
         if (y > action_dict[action][1][0]) & (y < action_dict[action][1][1]):
@@ -45,7 +45,7 @@ class Arm_driver(object):
           
         if action_flag:
             action_code = action_dict[action][0][0]
-            cmd = str(action_code) + ' ' + str(y) + ' ' + str(z) + '\n'
+            cmd = '3 ' + str(action_code) + ' ' + str(y) + ' ' + str(z) + '\n'
             print(cmd)  
             self.ser.write(cmd)
         
