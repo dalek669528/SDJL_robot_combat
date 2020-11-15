@@ -96,7 +96,7 @@ class Serial_driver(object):
 
         if(joy_msg.buttons[4]):
             cmd = "3 2 " + str(self.slide_encoder - self.encoder_gain) + "\n"
-            print(cmd)
+            # print(cmd)
             self.ser.write(cmd)
         if(joy_msg.buttons[5]):
             cmd = "3 2 " + str(self.slide_encoder + self.encoder_gain) + "\n"
@@ -141,7 +141,7 @@ class Serial_driver(object):
 
     def listener(self):
         sleep(1)
-        while (self.ser.isOpen() and not self.terminate):
+        while (self.ser.isOpen() and (not self.terminate) and (not rospy.is_shutdown())):
             sleep(self.T/1000.0)
             self.ser.write("4\n")
             s = self.ser.readline()
@@ -159,9 +159,9 @@ class Serial_driver(object):
                 self.pub_pos.publish(self.car_pose);
 
         self.ser.close()
-        rospy.on_shutdown(shutdowm)
-
+        sys.exit(0)
+        
 if __name__ == '__main__':
     rospy.init_node("Serial_driver", anonymous=False)
     serial_driver = Serial_driver()
-    rospy.spin()
+    # rospy.spin()

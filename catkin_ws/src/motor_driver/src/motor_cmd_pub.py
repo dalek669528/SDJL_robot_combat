@@ -12,7 +12,7 @@ class Motor_pwm(object):
         self.cmd = String()
 
         # Publications
-        self.pub_msg = rospy.Publisher("motor_cmd", String, queue_size=1)
+        self.pub_msg = rospy.Publisher("serial_cmd", String, queue_size=1)
         self.input()
 
     def input(self):

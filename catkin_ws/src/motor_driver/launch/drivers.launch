@@ -1,5 +1,9 @@
 <launch>
-
+    <node pkg="joy" type="joy_node" name="joy_node" required="true" output="screen">
+        <param name="coalesce_interval" type="double" value="0.1" />
+        <param name="deadzone" type="double" value="0.03" />
+    </node> 
+    
     <node pkg="motor_driver" type="serial_driver_node.py" name="serial_driver_node" output="screen">
     </node> 
     <!-- Subscribe Topics -->
