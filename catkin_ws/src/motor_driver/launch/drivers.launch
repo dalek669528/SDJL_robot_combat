@@ -1,0 +1,9 @@
+<launch>
+
+    <node pkg="motor_driver" type="serial_driver_node.py" name="serial_driver_node" output="screen">
+    </node> 
+    <!-- Subscribe Topics -->
+    <!-- "joy": sensor_msgs/Joy. The command read from joystick -->
+    <!-- Publish Topics -->
+    <!-- "~car_cmd": std_msgs/String. Wheels command for duckiebot -->
+</launch>

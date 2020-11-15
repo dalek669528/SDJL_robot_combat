@@ -41,7 +41,9 @@ class Master(object):
 
         #Camera variable
         self.master_info = Master_info()
-        self.target_color_list = ['red', 'green']
+        self.target_color_list = [['red', 'green'], ['green', 'blue'], ['green']]
+        self.color_list = [[1, 1, 0], [0, 1, 1], [0, 1, 0]]
+        self.detect_bounding = [[100, 100, 0, 100], [100, 100, 0, 0], [0, 0, 0, 0]]
         self.object_color = ""
         self.object_coord = np.array([-1, -1, -1])
         self.tolerance_camera = 10 #(mm)
@@ -62,10 +64,10 @@ class Master(object):
                     ['x','-10','y','200'],
                     ['x','-70','y','340','x','0']]
         
-        self.map2=[['x','-5','y','85'],
-                  ['x','-2.5','y','153'],
-                  ['y','125','x','-65','y','125'],
-                  ['x','-67.5','y','193'],
+        self.map2=[['x','-5','y','70'],
+                  ['x','-2.5','y','133'],
+                  ['y','110','x','-65'],
+                  ['x','-67.5','y','173'],
                   ['x','-35','y','350','x','0']]
 
         self.map3=[['y','244.76','x','-70','y','306.16','x','0']]
@@ -129,9 +131,9 @@ class Master(object):
     def Move2PosS13(self, stage_index, move_index):
         for i in range(0,len(self.maps[stage_index][move_index]),2):
             if(self.maps[stage_index][move_index][i]=='y'):
-                self.Move2PosY(int(self.maps[stage_index][move_index][i+1]))
+                self.Move2PosY(float(self.maps[stage_index][move_index][i+1]))
             else:
-                self.Move2PosX(int(self.maps[stage_index][move_index][i+1]))
+                self.Move2PosX(float(self.maps[stage_index][move_index][i+1]))
     
     def stop(self):
         self.cmd.data = "0 "
@@ -147,21 +149,22 @@ class Master(object):
         #subscribe color and coordination
         self.master_info.stage = self.stage_index
         self.master_info.open_flag = 1
-        self.master_info.bounding = np.array([100, 100, 0, 100])
+        self.master_info.bounding = self.detect_bounding[self.stage_index]
+        self.master_info.color = self.color_list[self.stage_index]
         self.pub_master_info_msg.publish(self.master_info)
 
         sleep(3)
-        target_color = target_color # [?, ?] 0:R, 1:G, 2:B
+        # target_color = target_color # red/green/blue
         target_coord = np.array([0, 200]) # [0,20](cm)
-
+        print(self.object_color)
         if ((self.object_color != target_color[0]) and (self.object_color != target_color[1])):
-            self.Move2Pos_related(0, 20)
+            # self.Move2Pos_related(0, 20)
             print('Not target color')
             return False, 0, 0
         else:
             object_coord = self.object_coord.copy()
             print(object_coord)
-        '''
+        
         while(abs(self.object_coord[0] - target_coord[0]) > self.tolerance_camera):
             if(self.object_coord[1] < 0): # Nothing detected!!!
                 print('Nothing detected!!!')
@@ -177,61 +180,58 @@ class Master(object):
         self.Move2Pos_related(0, (self.object_coord[1] - target_coord[1])/10)
         sleep(1)
                 #sleep
-        '''
+        
         self.master_info.open_flag = 0
-        self.pub_master_info_msg.publish(self.master_info)    
+        self.pub_master_info_msg.publish(self.master_info)
         print('modify finished')
         return True, object_coord[1]/10, object_coord[2]/10
 
-    def stage_1(self):
+    def stage(self, index):
         finish_flag = False
-        self.stage_index = 0
+        self.master_info.open_flag = 0
+        self.pub_master_info_msg.publish(self.master_info)
+        self.stage_index = index
         move_number = len(self.maps[self.stage_index])
         arm_action_number = len(self.arm_action_list[self.stage_index])
-        print('Get in Stage ' + str(self.stage_index) + ',  move_munber : ' + str(move_number) + ' arm_action_number : ' + str(arm_action_number))
+        print('\n\nGet in Stage ' + str(self.stage_index) + ',  move_munber : ' + str(move_number) + ' arm_action_number : ' + str(arm_action_number))
         
         # self.pub_master_info_msg.publish(self.stage_index) # publish current stage to pre_proc.py to change between rgb/BGremoved_rgb
         move_count = 0
         arm_action_count = 0
-        #movement = ['Move', 'CheckAndModify', 'MoveArm'] 
         movement = 'Move'
         while finish_flag == False:
-            print('\nStage 1 : ' + movement)
+            print('\nMovement : ' + movement)
             if movement == 'Move':
-                if move_count < arm_action_number:
+                if move_count < (move_number):
                     print('Move task : '+  str(move_count))
-                    #self.Move2PosS13(self.stage_index,move_count)
+                    self.Move2PosS13(self.stage_index,move_count)
                     move_count += 1
                     movement = 'CheckAndModify'
                 else:
                     finish_flag = True    
                 
             elif movement == 'CheckAndModify':
-                sleep(1)
-                action_flag, self.arm_y, self.arm_z= self.check_modify(self.target_color_list)
-                
-                #action_flag = False
+                action_flag, self.arm_y, self.arm_z= self.check_modify(self.target_color_list[self.stage_index])                
                 print('Do action or not : ' + str(action_flag))
                 movement  = 'MoveArm' if action_flag else 'Move'
-                # raw_input('Enter !')
-                # self.stop()
-                # raw_input('Enter !')
+
             elif movement == 'MoveArm':
                 arm_action = self.arm_action_list[self.stage_index][arm_action_count % arm_action_number]
-                print(arm_action + str(self.arm_y) + ' ' + str(self.arm_z))
+                print(arm_action + ' ' + str(self.arm_y) + ' ' + str(self.arm_z))
                 self.publishArm(arm_action, self.arm_y, self.arm_z)
                 arm_action_count += 1
                 movement = 'Move'
-      
+        self.master_info.open_flag = 0
+        self.pub_master_info_msg.publish(self.master_info)
+        print('\n\nGet out Stage ' + str(self.stage_index))
+
 if __name__ == '__main__':
     rospy.init_node("master",anonymous=False)
     master = Master()
     sleep(0.5)
 
-    master.stage_1()
-    
-    #for i in range(4):
-    #    master.Move2PosS13(0,i)
+    # master.stage(0)
+    master.stage(1)
 
     master.stop()
 
@@ -240,3 +240,4 @@ if __name__ == '__main__':
         if(master.cmd.data == "q"):
             break
         master.pub_arm_msg.publish(master.cmd)
+        

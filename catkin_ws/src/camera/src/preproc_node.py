@@ -8,7 +8,7 @@ import pyrealsense2 as rs
 import time
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
-from std_msgs.msg import Int32, Float32MultiArray, Int32MultiArray
+from std_msgs.msg import Int32
 from camera.msg import Coordination, Master_info
 from geometry_msgs.msg import Pose2D
 from detectROI import detect_color
@@ -26,9 +26,6 @@ class Preprocess(object):
         self.rgb_image = np.zeros((360, 640))
         self.depth_image = np.zeros((360, 640))
         self.stage_index = -1
-        self.stage_one = -1
-        self.stage_three = -1
-        self.target_color = -1
         self.t = time.time()
         self.depth_scale = 0.0010000000474974513
         self.seq_rgb = 0
@@ -42,6 +39,7 @@ class Preprocess(object):
         self.detect_bounding_y1 = 0
         self.detect_bounding_y2 = 0
         self.open_flag = 0
+        self.target_color = [0, 0, 0]
         # Subscribers
         self.master_info = rospy.Subscriber('master_info', Master_info, self.master_info_callback, queue_size=1)
         self.GetPos = rospy.Subscriber('position', Pose2D, self.GetPos_callback, queue_size=1)
@@ -50,7 +48,7 @@ class Preprocess(object):
 
 
         # Publishers
-        self.Color = rospy.Publisher('Color', Int32, queue_size=1) # publish max detected color
+        # self.Color = rospy.Publisher('Color', Int32, queue_size=1) # publish max detected color
         self.Coord = rospy.Publisher('Coord', Coordination, queue_size=1) # publish coordination of max color
         
     def get_filted_image(self, meter, rgb_image, depth_image, image_type): # get distance-filted image type:rgb, depth
@@ -70,15 +68,13 @@ class Preprocess(object):
         return filted_image
 
     def StageOne(self, rgb_image, depth_image):
-        color_msg = Int32()
+        # color_msg = Int32()
         coord_msg = Coordination()
         meter = 1
         detected_image, roi_array, color_count = detect_color(rgb_image, 0.3)
         #detected_image, roi_array, color_count = detect_color(removeBG_rgb, 0.3)
-
-
         removeBG_rgb = self.get_filted_image(meter, rgb_image, depth_image, 'rgb')
-        cv2.imshow('removeBG_rgb', removeBG_rgb)
+        # cv2.imshow('removeBG_rgb', removeBG_rgb)
 
         cv2.imshow('Detected image', detected_image)
         cv2.waitKey(1)
@@ -88,42 +84,11 @@ class Preprocess(object):
             self.Coord.publish(coord_msg)
             return 0
 
-        # t = time.time()
-
-        # x1 = roi_array[:, 0]
-        # y1 = roi_array[:, 1]
-        # x2 = roi_array[:, 2]
-        # y2 = roi_array[:, 3]
-        # w = x2 - x1
-        # h = y2 - y1
-        # area = w * h
-        # max_index = np.argmax(area)
-        # # print('2', time.time()-t)
-        # if max_index < color_count[0]:
-        #     max_color = 0
-        #     max_color_string = 'red'
-        # elif max_index < color_count[0] + color_count[1]:
-        #     max_color = 1
-        #     max_color_string = 'green'
-        # elif max_index < color_count.sum:
-        #     max_color = 2
-        #     max_color_string = 'blue'
-        #print('Max color in First stage: %d' % (max_color))
-
-        # max_roi = roi_array[max_index, :].reshape([1, 4])
-        # # t = time.time()
-        # depth_img_array = crop_depth(max_roi, removeBG_depth) # return detected array(x, y, depth)
-        # # print('3', time.time()-t)
-        # # t = time.time()
-        # coordination = calculate_coordinate(depth_img_array)
-        # # print('4', time.time()-t)
-        # print(coordination) # array(x, y(depth), h)
-
         # depth_image_array = crop_depth(roi_array, removeBG_depth)
-        depth_image_array = crop_depth(roi_array, self.depth_image)
+        depth_image_array = crop_depth(roi_array, depth_image)
         coordination = calculate_coordinate(depth_image_array)
 
-        self.x = 0
+        # self.pos_x = 0
         bound_filter = ((coordination > (self.left_bound - self.pos_x)) & (coordination < (self.right_bound - self.pos_x)))[:,0]
         # print(coordination)
         # print('bound filter : ', bound_filter) 
@@ -147,29 +112,36 @@ class Preprocess(object):
             max_color_string = 'blue'
 
         #publish
-        color_msg.data = max_color
+        # color_msg.data = max_color
         coord_msg.data = coordination[max_index, :].flatten().tolist()
         coord_msg.color = max_color_string
-        self.Color.publish(color_msg)
+        # self.Color.publish(color_msg)
         self.Coord.publish(coord_msg)
         
-        print(coordination)
+        # print(coordination)
 
     def StageTwo(self, rgb_image, depth_image):
+        coord_msg = Coordination()
         meter = 0.5
         removeBG_rgb = self.get_filted_image(meter, rgb_image, depth_image, 'rgb')
         removeBG_depth = self.get_filted_image(meter, rgb_image, depth_image, 'depth')
         detected_image, roi_array, color_count = detect_color(removeBG_rgb, 0.3, red = False)
+        # cv2.imshow('filted rgb', removeBG_rgb)
+        cv2.imshow('detected', detected_image)
+        cv2.waitKey(1)
         if roi_array.shape[0] == 0: # Nothing detected
             print('Second stage: Nothing detected.')
             coord_msg.data = [0, -1, 0]
+            coord_msg.color = 'Nothing'
             self.Coord.publish(coord_msg)
             return 0
         #remember to filt if green or blue are not detected!!!
-        if (color == 1)&(color_count[1] > 0):
+        if (color_count[1] > 0):
             target_array = roi_array[color_count[0]:color_count[0]+color_count[1], :]
-        elif (color == 2)&(color_count[2] > 0):
+            target_color_string = 'green'
+        elif (color_count[2] > 0):
             target_array = roi_array[color_count[0]+color_count[1]:sum(color_count), :]
+            target_color_string = 'blue'
         else:
             return 0
 
@@ -182,9 +154,11 @@ class Preprocess(object):
         #publish
         coord_msg = Coordination()
         coord_msg.data = coordination.flatten().tolist()
+        coord_msg.color = target_color_string
         self.Coord.publish(coord_msg)
 
     def StageThree(self, rgb_image, depth_image):
+        coord_msg = Coordination()
         meter = 0.5
         removeBG_rgb = self.get_filted_image(meter, rgb_image, depth_image, 'rgb')
         removeBG_depth = self.get_filted_image(meter, rgb_image, depth_image, 'depth')
@@ -228,6 +202,7 @@ class Preprocess(object):
                 depth_image = self.depth_image.copy()
         except CvBridgeError as e:
             print(e)
+        #cv2.imwrite('b.jpg', rgb_image)
         # cv2.imshow('rgb', rgb_image)
         # cv2.waitKey(1)
 
@@ -242,7 +217,7 @@ class Preprocess(object):
         rgb_image[:, rgb_image.shape[1]-self.detect_bounding_x2:rgb_image.shape[1]] = [0, 0, 0]
         rgb_image[0:self.detect_bounding_y1, :] = [0, 0, 0]
         rgb_image[rgb_image.shape[0]-self.detect_bounding_y2:rgb_image.shape[0], :] = [0, 0, 0]
-        self.stage_index = 0
+        # self.stage_index = 1
         if self.stage_index == 0:
             self.StageOne(rgb_image, depth_image) # return the coordination and the color of the largest object
         elif self.stage_index == 1:
@@ -277,6 +252,7 @@ class Preprocess(object):
             self.detect_bounding_y1 = data.bounding[2]
             self.detect_bounding_y2 = data.bounding[3]
             self.open_flag = data.open_flag
+            self.target_color = data.color
         except:
             print('Something wrong in Master_info Subscriber')
 
@@ -284,12 +260,12 @@ if __name__ == '__main__':
     rospy.init_node("ImagePreprocess",anonymous=False)
     preprocess = Preprocess()
     
-    preprocess.stage_index = 0
-    preprocess.detect_bounding_x1 = 100
-    preprocess.detect_bounding_x2 = 100
-    preprocess.detect_bounding_y1 = 0
-    preprocess.detect_bounding_y2 = 100
-    preprocess.open_flag = 1
+    # preprocess.stage_index = 0
+    # preprocess.detect_bounding_x1 = 100
+    # preprocess.detect_bounding_x2 = 100
+    # preprocess.detect_bounding_y1 = 0
+    # preprocess.detect_bounding_y2 = 0
+    # preprocess.open_flag = 1
     
     try:
         rospy.spin()

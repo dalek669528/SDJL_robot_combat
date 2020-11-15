@@ -8,6 +8,9 @@ from time import sleep
 import serial
 import struct
 
+def shutdowm():
+    print("Shotdoun ")
+
 class Serial_driver(object):
     def __init__(self):
         self.node_name = rospy.get_name()
@@ -22,7 +25,7 @@ class Serial_driver(object):
             timeout=1
         )
         self.terminate = False
-        self.T = 250        # ms
+        self.T = 500        # ms
 
         self.car_pose = Pose2D()
         self.v_gain = 25
@@ -32,15 +35,16 @@ class Serial_driver(object):
         self.ang_gain = 10;
 
         self.slide_encoder = 0;
-        self.encoder_gain = 30
+        self.encoder_gain = 20
 
         # Publications
         self.pub_pos = rospy.Publisher("position", Pose2D, queue_size=1)
 
         # Subscriptions
+        self.sub_cmd = rospy.Subscriber("serial_cmd", String, self.cbSerial, queue_size=1)
         self.sub_cmd = rospy.Subscriber("motor_cmd", String, self.cbMorot, queue_size=1)
         self.sub_cmd = rospy.Subscriber("arm_cmd", String, self.cbArm, queue_size=1)
-        self.sub_joy_ = rospy.Subscriber("joy", Joy, self.cbJoy, queue_size=1)
+        self.sub_joy = rospy.Subscriber("joy", Joy, self.cbJoy, queue_size=1)
         self.listener()
 
 
@@ -52,6 +56,7 @@ class Serial_driver(object):
         if(joy_msg.buttons[7]):
             # reset car
             cmd = "0\n"
+            # print(cmd)
             self.ser.write(cmd)
         # Pose control 
         Vx = joy_msg.axes[0] * self.v_gain * (-1)
@@ -61,6 +66,7 @@ class Serial_driver(object):
             Vx = joy_msg.axes[6] * self.v_gain * (-1)
             Vy = joy_msg.axes[7] * self.v_gain
         cmd = "1 3 " + str(Vx) + " "  + str(Vy) + " " + str(w) + "\n"
+        # print(cmd)
         self.ser.write(cmd)
         # Arm control
         if(joy_msg.buttons[0]):
@@ -73,6 +79,8 @@ class Serial_driver(object):
             self.servo_ptr = 3
         
         angle = [0, 0, 0, 0]
+        for i in range(4):
+            angle[i] = self.arm_angle[i]
         if(joy_msg.axes[2] == -1 or joy_msg.axes[5] == -1):
             if(joy_msg.axes[2] == -1):
                 angle[self.servo_ptr] = self.arm_angle[self.servo_ptr] - self.ang_gain
@@ -83,21 +91,28 @@ class Serial_driver(object):
                 + " " + str(angle[1])\
                 + " " + str(angle[2])\
                 + " " + str(angle[3]) +  "\n"
+            # print(cmd)
             self.ser.write(cmd)
 
         if(joy_msg.buttons[4]):
             cmd = "3 2 " + str(self.slide_encoder - self.encoder_gain) + "\n"
+            print(cmd)
             self.ser.write(cmd)
         if(joy_msg.buttons[5]):
             cmd = "3 2 " + str(self.slide_encoder + self.encoder_gain) + "\n"
+            # print(cmd)
+            self.ser.write(cmd)
+
+    def cbSerial(self, str_msg):
+        if(str_msg.data == "q"):
+            self.terminate = True
+        else:
+            cmd = str_msg.data + "\n"
             self.ser.write(cmd)
 
     def cbMorot(self, str_msg):
-            if(str_msg.data == "q"):
-                self.terminate = True
-            else:
-                cmd = "1 " + str_msg.data + "\n"
-                self.ser.write(cmd)
+        cmd = "1 " + str_msg.data + "\n"
+        self.ser.write(cmd)
 
     def cbArm(self, str_msg):
         str_list = str_msg.data.split()
@@ -144,9 +159,9 @@ class Serial_driver(object):
                 self.pub_pos.publish(self.car_pose);
 
         self.ser.close()
-        rospy.on_shutdown()
+        rospy.on_shutdown(shutdowm)
 
 if __name__ == '__main__':
-    rospy.init_node("Serial_driver",anonymous=False)
+    rospy.init_node("Serial_driver", anonymous=False)
     serial_driver = Serial_driver()
     rospy.spin()
