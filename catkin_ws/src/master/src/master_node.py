@@ -43,7 +43,7 @@ class Master(object):
         self.master_info = Master_info()
         self.target_color_list = [['red', 'green'], ['green', 'blue'], ['green']]
         self.color_list = [[1, 1, 0], [0, 1, 1], [0, 1, 0]]
-        self.detect_bounding = [[100, 100, 0, 100], [100, 100, 0, 0], [0, 0, 0, 0]]
+        self.detect_bounding = [[100, 100, 0, 100], [0, 0, 0, 0], [0, 0, 0, 0]]
         self.object_color = ""
         self.object_coord = np.array([-1, -1, -1])
         self.tolerance_camera = 10 #(mm)
@@ -159,14 +159,14 @@ class Master(object):
         print(self.object_color)
         if ((self.object_color != target_color[0]) and (self.object_color != target_color[1])):
             # self.Move2Pos_related(0, 20)
-            print('Not target color')
+            print('Skip')
             return False, 0, 0
         else:
             object_coord = self.object_coord.copy()
             print(object_coord)
         
         while(abs(self.object_coord[0] - target_coord[0]) > self.tolerance_camera):
-            if(self.object_coord[1] < 0): # Nothing detected!!!
+            if(self.object_color == 'Nothing'): # Nothing detected!!!
                 print('Nothing detected!!!')
                 break
             self.Move2Pos_related((self.object_coord[0] - target_coord[0])/10, 0)
@@ -204,7 +204,7 @@ class Master(object):
             if movement == 'Move':
                 if move_count < (move_number):
                     print('Move task : '+  str(move_count))
-                    self.Move2PosS13(self.stage_index,move_count)
+                    # self.Move2PosS13(self.stage_index,move_count)
                     move_count += 1
                     movement = 'CheckAndModify'
                 else:

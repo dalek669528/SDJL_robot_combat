@@ -65,7 +65,7 @@ def process_contours(color_string, contours, threshold, canvas, roi_list):
 	dim = canvas.shape
 	for ind, cnt in enumerate(contours):
 		x, y, w, h = cv2.boundingRect(cnt)
-		if(((w * h) > 500*4) & ((w * h) < 57600)):
+		if(((w * h) > 500*2) & ((w * h) < 57600)):
 			boxes.append([x, y, x+w, y+h])
 	boxes = np.array(boxes)
 	picks = non_max_suppression_slow(boxes, threshold) if len(boxes) > 1 else boxes
@@ -75,7 +75,7 @@ def process_contours(color_string, contours, threshold, canvas, roi_list):
 		x = int(startX)
 		y = int(startY)
 
-		if(((w * h) > 500*4) & ((w * h) < 57600)):
+		if(((w * h) > 500*2) & ((w * h) < 57600)):
 			count += 1
 			x1 = x - 10 if (x - 10) > 0 else 0
 			y1 = y - 10 if (y - 10) > 0 else 0

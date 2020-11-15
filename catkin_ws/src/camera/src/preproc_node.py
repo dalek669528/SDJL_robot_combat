@@ -81,6 +81,7 @@ class Preprocess(object):
         if roi_array.shape[0] == 0: # Nothing detected
             print('First stage: Nothing detected.')
             coord_msg.data = [0, -1, 0]
+            coord_msg.color = 'Nothing'
             self.Coord.publish(coord_msg)
             return 0
 
@@ -149,7 +150,7 @@ class Preprocess(object):
         sorted_index = np.argsort(depth_img_array[:, 2])
         closest = depth_img_array[sorted_index[0], :].reshape([1, 3])
         coordination = calculate_coordinate(closest)
-        #print(coordination)
+        print(coordination)
 
         #publish
         coord_msg = Coordination()
@@ -166,6 +167,7 @@ class Preprocess(object):
         if color_count[1] == 0: # Green 'E' is not detected
             print('Third stage: Nothing detected.')
             coord_msg.data = [0, -1, 0]
+            coord_msg.color = 'Nothing'
             self.Coord.publish(coord_msg)
             return 0
         green_array = roi_array[color_count[0]:color_count[0]+color_count[1]:, :]
