@@ -42,8 +42,10 @@ class Master(object):
         #Camera variable
         self.master_info = Master_info()
         self.target_color_list = [['red', 'green'], ['green', 'blue'], ['green']]
+        self.target_offset_list = [1, 1.5, 7.5, 2]
+        self.target_coord_list = [[200, 0], [185, 0], [200, 0]]
         self.color_list = [[1, 1, 0], [0, 1, 1], [0, 1, 0]]
-        self.detect_bounding = [[100, 100, 0, 100], [0, 0, 0, 0], [0, 0, 0, 0]]
+        self.detect_bounding_list = [[100, 100, 0, 100], [0, 0, 0, 0], [0, 0, 0, 0]]
         self.object_color = ""
         self.object_coord = np.array([-1, -1, -1])
         self.tolerance_camera = 10 #(mm)
@@ -62,13 +64,13 @@ class Master(object):
         self.map1 = [['x','-10','y','50'],
                     ['x','-70','y','125'],
                     ['x','-10','y','200'],
-                    ['x','-70','y','340','x','0']]
+                    ['x','-70','y','340']]
         
         self.map2=[['x','-5','y','70'],
                   ['x','-2.5','y','133'],
                   ['y','110','x','-65'],
                   ['x','-67.5','y','173'],
-                  ['x','-35','y','350','x','0']]
+                  ['x','-35','y','350']]
 
         self.map3=[['y','244.76','x','-70','y','306.16','x','0']]
         self.maps.append([self.map1, self.map2, self.map3])
@@ -145,17 +147,17 @@ class Master(object):
         self.pub_arm_msg.publish(self.cmd)
         
     #Combine
-    def check_modify(self, target_color):
+    def check_modify(self, target_color, move_count):
         #subscribe color and coordination
         self.master_info.stage = self.stage_index
         self.master_info.open_flag = 1
-        self.master_info.bounding = self.detect_bounding[self.stage_index]
+        self.master_info.bounding = self.detect_bounding_list[self.stage_index]
         self.master_info.color = self.color_list[self.stage_index]
         self.pub_master_info_msg.publish(self.master_info)
 
-        sleep(3)
+        sleep(5)
         # target_color = target_color # red/green/blue
-        target_coord = np.array([0, 200]) # [0,20](cm)
+        target_coord =  target_coord_list[self.stage_index]# [0,20](cm)
         print(self.object_color)
         if ((self.object_color != target_color[0]) and (self.object_color != target_color[1])):
             # self.Move2Pos_related(0, 20)
@@ -171,6 +173,7 @@ class Master(object):
                 break
             self.Move2Pos_related((self.object_coord[0] - target_coord[0])/10, 0)
             sleep(1)
+        
             #if ((abs(target_coord[0] - object_coord[0]) > self.tolerance_camera)) or ((abs(target_coord[1] - object_coord[1]) > self.tolerance_camera)):
         # print('Object pos : ', self.object_coord[0], self.object_coord[1])
         # print('Desire move(relatef): ', (self.object_coord[0] - target_coord[0])/10, (self.object_coord[1] - target_coord[1])/10)
@@ -179,12 +182,18 @@ class Master(object):
         
         self.Move2Pos_related(0, (self.object_coord[1] - target_coord[1])/10)
         sleep(1)
-                #sleep
         
         self.master_info.open_flag = 0
         self.pub_master_info_msg.publish(self.master_info)
         print('modify finished')
-        return True, object_coord[1]/10, object_coord[2]/10
+        if self.stage_index == 0:
+            return True, (object_coord[1]+1.5)/10, object_coord[2]/10
+        elif (self.stage_index == 1) and move_count%2 == 0:
+            return True, (object_coord[1]+1.5)/10, object_coord[2]/10
+        elif (self.stage_index == 1) and move_count%2 == 1:
+            return True, (object_coord[1]+7.5)/10, object_coord[2]/10
+        elif self.stage_index == 2:
+            return True, (object_coord[1]+2)/10, object_coord[2]/10
 
     def stage(self, index):
         finish_flag = False
@@ -211,7 +220,7 @@ class Master(object):
                     finish_flag = True    
                 
             elif movement == 'CheckAndModify':
-                action_flag, self.arm_y, self.arm_z= self.check_modify(self.target_color_list[self.stage_index])                
+                action_flag, self.arm_y, self.arm_z= self.check_modify(self.target_color_list[self.stage_index], move_count)                
                 print('Do action or not : ' + str(action_flag))
                 movement  = 'MoveArm' if action_flag else 'Move'
 

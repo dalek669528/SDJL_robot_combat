@@ -39,10 +39,12 @@ class Camera(object):
     
     self.publishImage()
    
-    
   def publishImage(self):
     time_count = 1
-    while(True):
+    # file_name = 'testvideo.mp4'
+    fourcc = cv2.VideoWriter_fourcc(*'MPEG')
+    output = cv2.VideoWriter('testvideo.avi', fourcc, 3.0, (self.image_width, self.image_height))
+    while(not rospy.is_shutdown()):
       try:
         frames =  self.pipeline.wait_for_frames()
         aligned_frames = self.align.process(frames)
@@ -62,7 +64,10 @@ class Camera(object):
         color_image = np.asanyarray(color_frame.get_data())
         flipped_rgb = cv2.flip(color_image, -1)
         flipped_depth = cv2.flip(depth_image, -1)
-    
+        # flipped_rgb = cv2.cvtColor(flipped_rgb,cv2.COLOR_RGB2BGR)
+        # cv2.imshow('rgb', flipped_rgb)
+        output.write(flipped_rgb)
+
         rospy.loginfo('Publish image.') 
 
         msg_rgb_frame          = CvBridge().cv2_to_imgmsg(flipped_rgb)
@@ -72,8 +77,12 @@ class Camera(object):
         self.CameraDepthImage.publish(msg_depth_frame)
         print('RGB seq: %d' % (msg_rgb_frame.header.seq))
         print('Depth seq: %d' % (msg_depth_frame.header.seq))
+        if cv2.waitKey(1) and 0xFF == ord('q'):
+            break
       except KeyboardInterrupt:
+        output.release()
         print("Shutting Down...")
+    output.release()
 
 if __name__ == '__main__':
   rospy.init_node("CameraImagePublisher", anonymous=False)

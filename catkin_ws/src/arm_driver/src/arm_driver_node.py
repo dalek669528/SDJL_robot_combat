@@ -34,7 +34,7 @@ class Arm_driver(object):
     def moveArm(self, action, y, z):
         #action_list = ['Stamp', 'Pick', 'Place', 'Push']
         action_flag = False
-        action_dict = {'Stamp': [[222], [18, 24], [20]], 'Pick': [[221], [20, 27], [-14]], 
+        action_dict = {'Stamp': [[222], [18, 24], [20]], 'Pick': [[221], [20, 27], [-16]], 
                        'Place': [[222], [18, 24], [20]], 'Push': [[231], [0, 0], [0]]}
         
         if (y > action_dict[action][1][0]) & (y < action_dict[action][1][1]):

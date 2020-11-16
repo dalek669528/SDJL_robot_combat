@@ -219,7 +219,7 @@ class Preprocess(object):
         rgb_image[:, rgb_image.shape[1]-self.detect_bounding_x2:rgb_image.shape[1]] = [0, 0, 0]
         rgb_image[0:self.detect_bounding_y1, :] = [0, 0, 0]
         rgb_image[rgb_image.shape[0]-self.detect_bounding_y2:rgb_image.shape[0], :] = [0, 0, 0]
-        # self.stage_index = 1
+        self.stage_index = 1
         if self.stage_index == 0:
             self.StageOne(rgb_image, depth_image) # return the coordination and the color of the largest object
         elif self.stage_index == 1:
@@ -258,6 +258,11 @@ class Preprocess(object):
         except:
             print('Something wrong in Master_info Subscriber')
 
+    def writeVideo(self, frame, file_name):
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        output = cv2.VideoWriter(file_name, fourcc, 3.0, (640, 360))
+        output.write(frame)
+
 if __name__ == '__main__':
     rospy.init_node("ImagePreprocess",anonymous=False)
     preprocess = Preprocess()
@@ -267,7 +272,7 @@ if __name__ == '__main__':
     # preprocess.detect_bounding_x2 = 100
     # preprocess.detect_bounding_y1 = 0
     # preprocess.detect_bounding_y2 = 0
-    # preprocess.open_flag = 1
+    preprocess.open_flag = 1
     
     try:
         rospy.spin()

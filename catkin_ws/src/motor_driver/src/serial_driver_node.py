@@ -32,10 +32,10 @@ class Serial_driver(object):
 
         self.arm_angle = [0, 0, 0, 0]
         self.servo_ptr = 0;
-        self.ang_gain = 10;
+        self.ang_is_moving = False;
 
         self.slide_encoder = 0;
-        self.encoder_gain = 20
+        self.encoder_gain = 200
 
         # Publications
         self.pub_pos = rospy.Publisher("position", Pose2D, queue_size=1)
@@ -75,25 +75,32 @@ class Serial_driver(object):
             self.servo_ptr = 1
         elif(joy_msg.buttons[2]):
             self.servo_ptr = 2
-        elif(joy_msg.buttons[3]):
-            self.servo_ptr = 3
+
+        if(joy_msg.buttons[3]):
+            cmd = "2 311\n"
+            # print(cmd)
+            self.ser.write(cmd)
         
         angle = [0, 0, 0, 0]
         for i in range(4):
             angle[i] = self.arm_angle[i]
-        if(joy_msg.axes[2] == -1 or joy_msg.axes[5] == -1):
-            if(joy_msg.axes[2] == -1):
-                angle[self.servo_ptr] = self.arm_angle[self.servo_ptr] - self.ang_gain
-            if(joy_msg.axes[5] == -1):
-                angle[self.servo_ptr] = self.arm_angle[self.servo_ptr] + self.ang_gain
-
-            cmd = "2 121 " + str(angle[0])\
-                + " " + str(angle[1])\
-                + " " + str(angle[2])\
-                + " " + str(angle[3]) +  "\n"
+        if(joy_msg.axes[2] < 0 or joy_msg.axes[5] < 0):
+            self.ang_is_moving = True
+            ratio = 0
+            direct = 0
+            if(joy_msg.axes[2] != 1):
+                ratio = (joy_msg.axes[2] - 1) * -0.5
+                direct = 1
+            if(joy_msg.axes[5] != 1):
+                ratio = (joy_msg.axes[5] - 1) * -0.5
+            cmd = "2 122 " + str(self.servo_ptr) + " " + str(ratio) + " " + str(direct) +  "\n"
             # print(cmd)
             self.ser.write(cmd)
-
+        elif(self.ang_is_moving):
+            self.ang_is_moving = False
+            cmd = "2 122 -1 0 \n"
+            # print(cmd)
+            self.ser.write(cmd)
         if(joy_msg.buttons[4]):
             cmd = "3 2 " + str(self.slide_encoder - self.encoder_gain) + "\n"
             # print(cmd)
@@ -117,15 +124,15 @@ class Serial_driver(object):
     def cbArm(self, str_msg):
         str_list = str_msg.data.split()
         action = str_list[0]
-        y = int(str_list[1])
-        z = int(str_list[2])
+        y = float(str_list[1])
+        z = float(str_list[2])
         self.moveArm(action, y, z)
 
     def moveArm(self, action, y, z):
         #action_list = ['Stamp', 'Pick', 'Place', 'Push']
         action_flag = False
-        action_dict = {'Stamp': [[222], [18, 24], [20]], 'Pick': [[221], [20, 27], [-14]], 
-                       'Place': [[222], [18, 24], [20]], 'Push': [[231], [0, 0], [0]]}
+        action_dict = {'Stamp': [[222], [7, 26], [20]], 'Pick': [[221], [12.5, 21.5], [-14]], 
+                       'Place': [[222], [7, 26], [20]], 'Push': [[222], [7, 26], [20]]}
         
         if (y > action_dict[action][1][0]) & (y < action_dict[action][1][1]):
             action_flag = True
@@ -142,8 +149,8 @@ class Serial_driver(object):
     def listener(self):
         sleep(1)
         while (self.ser.isOpen() and (not self.terminate) and (not rospy.is_shutdown())):
-            sleep(self.T/1000.0)
-            self.ser.write("4\n")
+            # sleep(self.T/1000.0)
+            # self.ser.write("4\n")
             s = self.ser.readline()
             arr = s.split(' ')
             print arr
