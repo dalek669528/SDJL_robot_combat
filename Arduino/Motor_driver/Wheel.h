@@ -1,6 +1,27 @@
 #ifndef _WHEEL_H_
 #define _WHEEL_H_
 
+//定义引脚名称 
+#define EN      A1  //使能输出引脚，该引脚时高电平才允许控制直流电机，低电平时电机停止
+#define AD      A0  //PWM输入引脚，读取电池电压
+#define MotorA1 8   //PWM输出引脚，控制直流电机A
+#define MotorA2 13  //Dig输出引脚，控制直流电机A
+#define MotorB1 9   //PWM输出引脚，控制直流电机B
+#define MotorB2 12  //Dig输出引脚，控制直流电机B
+#define MotorC1 10  //PWM输出引脚，控制直流电机C
+#define MotorC2 11  //Dig输出引脚，控制直流电机C
+#define MotorD1 6   //PWM输出引脚，控制直流电机D
+#define MotorD2 7   //Dig输出引脚，控制直流电机D
+
+#define SPD_INT_A1 18
+#define SPD_INT_A2 14
+#define SPD_INT_B1 19
+#define SPD_INT_B2 15
+#define SPD_INT_C1 20
+#define SPD_INT_C2 16
+#define SPD_INT_D1 21
+#define SPD_INT_D2 17
+
 #define CPR 390 //count per round
 #define TIRE_RADIUS 3 //3cm
 #define MAX_PWM 100
@@ -12,22 +33,15 @@ class Wheel{
     int pwm;
     long encoder, encoder_past;
     float Kp, Ki, Kd;
-    float delta_x, w, v;
+    float delta_x, v;
     float desire_V;
     uint32_t SpeedTimer;
     float err, err_sum, err_past;
     Wheel(){
       pwm = encoder = encoder_past = 0;
       Kp = Ki = Kd = 0;
-      delta_x = w = v = 0;
+      delta_x = v = 0;
       err = err_sum = err_past = 0;
-    }
-    Wheel(int p){
-      pwm = p;
-      encoder = encoder_past = 0;
-      Kp = Ki = Kd = 0;
-      delta_x = w = v = 0;
-      SpeedTimer = millis();
     }
     void set_PID(float p, float i, float d){
       Kp = p;
@@ -76,6 +90,7 @@ public:
   float p_Kp = 1, p_Ki = 0, p_Kd = 4; 
 
   int control_type = 0, past_control_type = 0;
+  bool print_info = false;
 
   Car(){
     A.set_PID(1, 0.5, 2);
@@ -101,6 +116,7 @@ public:
     pos_err_sum[0] = pos_err_sum[1] = pos_err_sum[2] = 0;
   }
   void car_reset(){
+    control_type = -2;
     car_stop();
     reset_err();
     X = 0, Y = 0, theta = 0;

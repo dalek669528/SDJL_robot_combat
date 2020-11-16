@@ -25,3 +25,17 @@ void Encoder_D(){
   else
     car.D.encoder = car.D.encoder - 1; //Reverse
 }
+
+void Encoder_S1(){
+  if(digitalRead(INT_S2) == HIGH)
+    slide.encoder = slide.encoder + 1; //Forward
+  else
+    slide.encoder = slide.encoder - 1; //Reverse
+}
+
+void Encoder_S2(){
+//  if(digitalRead(INT_S1) == HIGH)
+//    car.D.encoder = car.D.encoder + 1; //Forward
+//  else
+//    car.D.encoder = car.D.encoder - 1; //Reverse
+}

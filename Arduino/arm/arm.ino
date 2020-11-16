@@ -1,11 +1,14 @@
 #include <Servo.h>   //載入函式庫，這是內建的，不用安裝
 
 
-#define SERVO1_PIN 11
-#define SERVO2_PIN 10
-#define SERVO3_PIN 9
-#define SERVO4_PIN 6
-
+//#define SERVO1_PIN 11
+//#define SERVO2_PIN 10
+//#define SERVO3_PIN 9
+//#define SERVO4_PIN 6
+#define SERVO1_PIN A3
+#define SERVO2_PIN A4
+#define SERVO3_PIN A5
+#define SERVO4_PIN A6
 
 struct motor_struct {
     Servo myservo;
@@ -24,11 +27,15 @@ void setup() {
     motor_array[1].myservo.attach(SERVO2_PIN, 500, 2500); // 修正脈衝寬度範圍
     motor_array[2].myservo.attach(SERVO3_PIN, 500, 2500); // 修正脈衝寬度範圍
     motor_array[3].myservo.attach(SERVO4_PIN, 500, 2500); // 修正脈衝寬度範圍
-    float angle_array[4] = {120, -60, -60, 30};
-    for(int i=0;i<4;i++)
-      motor_array[i].pwm_past = transform(angle_array[i]);
+    motor_array[0].myservo.writeMicroseconds(1500);
+    motor_array[1].myservo.writeMicroseconds(1500);
+    motor_array[2].myservo.writeMicroseconds(1500);
+    motor_array[3].myservo.writeMicroseconds(1500);
+//    float angle_array[4] = {120, -60, -60, 30};
+//    for(int i=0;i<4;i++)
+//      motor_array[i].pwm_past = transform(angle_array[i]);
     
-    moveServoGroup(1, angle_array);
+//    moveServoGroup(1, angle_array);
 }
 
 void loop() {   
@@ -38,7 +45,7 @@ void loop() {
     time = millis();
     Serial.println(time); //prints time since program started
     
-    processInfo();
+//    processInfo();
     
     Serial.print("Time: ");
     time = millis();

@@ -11,14 +11,6 @@ void Pin_init(){
   pinMode(MotorD1, OUTPUT);
   pinMode(MotorD2, OUTPUT);
   
-  pinMode(Motor_S1, OUTPUT);
-  pinMode(Motor_S2, OUTPUT);
-  
-  pinMode(SERVO1_PIN, OUTPUT);
-  pinMode(SERVO2_PIN, OUTPUT);
-  pinMode(SERVO3_PIN, OUTPUT);
-  pinMode(SERVO4_PIN, OUTPUT);
-
   pinMode(SPD_INT_A1, INPUT_PULLUP);
   pinMode(SPD_INT_A2, INPUT);
   pinMode(SPD_INT_B1, INPUT_PULLUP);
@@ -27,8 +19,16 @@ void Pin_init(){
   pinMode(SPD_INT_C2, INPUT);
   pinMode(SPD_INT_D1, INPUT_PULLUP);
   pinMode(SPD_INT_D2, INPUT);
+
+  pinMode(Motor_S1, OUTPUT);
+  pinMode(Motor_S2, OUTPUT);
   pinMode(INT_S1, INPUT_PULLUP);
-  pinMode(INT_S1, INPUT);
+  pinMode(INT_S2, INPUT);
+  
+  pinMode(SERVO1_PIN, OUTPUT);
+  pinMode(SERVO2_PIN, OUTPUT);
+  pinMode(SERVO3_PIN, OUTPUT);
+  pinMode(SERVO4_PIN, OUTPUT);
   
   //初始化TBN单/双路驱动
   digitalWrite(EN, 1);
@@ -44,4 +44,9 @@ void Pin_init(){
   attachInterrupt(digitalPinToInterrupt(SPD_INT_B1), Encoder_B, RISING);
   attachInterrupt(digitalPinToInterrupt(SPD_INT_C1), Encoder_C, RISING);
   attachInterrupt(digitalPinToInterrupt(SPD_INT_D1), Encoder_D, RISING);
+
+  analogWrite(Motor_S1, 0);
+  analogWrite(Motor_S2, 0);
+  attachInterrupt(digitalPinToInterrupt(INT_S1), Encoder_S1, RISING);
+//  attachInterrupt(digitalPinToInterrupt(INT_S2), Encoder_S2, RISING);
 }
