@@ -11,11 +11,16 @@ void Arm::Serial_r(String str) {
         break;
       case 122:
         for(int i=0; i<4; i++)
-          serial_Angle_array[i] = servo[i].now_angle;
+          serial_Angle_array[i] = servo[i].desire_angle;
         idx = atoi(strtok(NULL, " "));
         if(idx != -1){
           SERVO_SPEED = SERVO_SPEED * atof(strtok(NULL, " "));
           serial_Angle_array[idx] = ( (atoi(strtok(NULL, " "))?180:0  ) - SERVO_OFFSET[idx]) * SERVO_POSITIVE[idx]; 
+        }
+        else{
+          for(int i=0; i<4; i++)
+            if(servo[i].desire_angle != servo[i].now_angle)
+              serial_Angle_array[i] = servo[i].now_angle;
         }
         break;
         
@@ -129,7 +134,13 @@ bool Arm::is_singular(float desire_y, float desire_z, float desireAngle_array[])
     return true;
   return false;
 }
-
+/*
+49 31 -9
+43 -63 63
+48 -69 77 
+57 -83 70
+67 -90 70
+*/
 void Arm::Routine(){
   switch (workType) {
     case 0:

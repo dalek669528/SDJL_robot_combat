@@ -2,10 +2,10 @@ Slide::Slide(){
   control_type = pwm = encoder = 0;
   Kp = Ki = Kd = 0;
   err = err_sum = err_past = 0;
-  MAX_ENCODER = 250;
+  MAX_ENCODER = 200;
   MIN_ENCODER = 0;
   print_info = false;
-  
+  is_init = false;
 }
 void Slide::set_PID(float p, float i, float d, float pb, float ib, float db){
   Kp = p;
@@ -17,14 +17,20 @@ void Slide::set_PID(float p, float i, float d, float pb, float ib, float db){
 }
 
 void Slide::PWM_Calculate(){
+  if(!is_init){
+    encoder = 10;
+    desire_encode = 0;
+    control_type = 2; 
+  }
+  
   if(control_type == 2){
     
     desire_encode = (desire_encode >= MAX_ENCODER) ? MAX_ENCODER : desire_encode;
     desire_encode = (desire_encode <= MIN_ENCODER) ? MIN_ENCODER : desire_encode;
 
     err = desire_encode - encoder;
-    err = (err >=  10) ?  10 : err;
-    err = (err <= -10) ? -10 : err;
+    err = (err >=  5) ?  5 : err;
+    err = (err <= -5) ? -5 : err;
     err_sum += err;
     if(err > 0)
       pwm = Kp * err + Ki * err_sum + Kd * (err - err_past);
@@ -51,16 +57,40 @@ void Slide::reset_error(){
 }
 
 void Slide::Slide_Control(){
-//  if(control_type !=2 || ( encoder>MIN_ENCODER && encoder<MAX_ENCODER) ){
-    if(pwm < 0) { //反转
-      analogWrite(Motor_S1, (-pwm) > 255 ? 255 : (-pwm));
-      analogWrite(Motor_S2, 0);
+  bool button_value = digitalRead(button);
+  if(button_value  && !is_init){
+    is_init = true;
+    encoder = 0;
+    desire_encode = 5;
+    reset_error();
+  }
+  
+  if((pwm < 0) && !button_value ) { //反转
+    analogWrite(Motor_S1, (-pwm) > 255 ? 255 : (-pwm));
+    analogWrite(Motor_S2, 0);
+  }
+  else if(encoder < (MAX_ENCODER + 20)){ //正转
+    analogWrite(Motor_S1, 0);
+    analogWrite(Motor_S2, pwm > 255 ? 255 : pwm);
+  }
+  else{
+    analogWrite(Motor_S1, 0);
+    analogWrite(Motor_S2, 0);
+    if(button_value){
+      reset_error();
+      encoder = 0;
+      if(desire_encode < 5)
+        desire_encode = 5;
     }
-    else { //正转
-      analogWrite(Motor_S1, 0);
-      analogWrite(Motor_S2, pwm > 255 ? 255 : pwm);
+    if(encoder < (MAX_ENCODER + 20)){
+      reset_error();
+      encoder = MAX_ENCODER;
+      desire_encode = 0;
+      is_init = false;
     }
-//  }
+    
+  }
+
 }
 
 void Slide::Serial_r(String str){

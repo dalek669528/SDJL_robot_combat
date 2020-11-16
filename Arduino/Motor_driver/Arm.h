@@ -14,12 +14,16 @@
 #define INT_S2 3
 #define Motor_S1 4
 #define Motor_S2 5
+#define button A8
+#define Vcc A9
+#define Gnd A10
 
 #include <Servo.h>
 
 
 class Slide{
 public:
+  bool is_init = false;
   int pwm, control_type;
   long encoder;
   float Kp, Ki, Kd;

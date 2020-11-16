@@ -64,6 +64,12 @@ void printInfo(){
     Serial.print(arm.servo[3].now_angle);
     Serial.print(" ");
     Serial.print(slide.encoder);
+    Serial.print(" ");
+    Serial.print(slide.desire_encode);
+    Serial.print(" ");
+    Serial.print(slide.pwm);
+    Serial.print(" ");
+    Serial.print(digitalRead(button));
     Serial.print("\n");
     
 }

@@ -29,6 +29,13 @@ void Pin_init(){
   pinMode(SERVO2_PIN, OUTPUT);
   pinMode(SERVO3_PIN, OUTPUT);
   pinMode(SERVO4_PIN, OUTPUT);
+
+  pinMode(button, INPUT);
+  pinMode(Gnd, OUTPUT);
+  pinMode(Vcc, OUTPUT);
+  digitalWrite(Vcc, HIGH);
+  digitalWrite(Gnd, LOW);
+
   
   //初始化TBN单/双路驱动
   digitalWrite(EN, 1);
