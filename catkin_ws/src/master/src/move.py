@@ -36,7 +36,7 @@ class Move(object):
         self.maps = self.maps[0]
         
         # Subscribers
-        self.GetPos = rospy.Subscriber('position',Pose2D, self.GetPos_callback, queue_size=1)
+        self.GetPos = rospy.Subscriber('car_pose',Pose2D, self.GetPos_callback, queue_size=1)
 
         # Publishers
         self.pub_msg = rospy.Publisher('motor_cmd', String, queue_size=1)

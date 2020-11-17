@@ -32,13 +32,22 @@ class YOLO(object):
             return "Unrecognized attribute name '" + n + "'"
 
     def __init__(self, **kwargs):
+        '''
         self.__dict__.update(self._defaults) # set up default values
         self.__dict__.update(kwargs) # and update with user overrides
         self.class_names = self._get_class()
         self.anchors = self._get_anchors()
         self.sess = K.get_session()
         self.boxes, self.scores, self.classes = self.generate()
-
+        '''
+        self.__dict__.update(self._defaults) # set up default values
+        self.__dict__.update(kwargs) # and update with user overrides
+        self.class_names = self._get_class()
+        self.anchors = self._get_anchors()
+        self.sess = K.get_session()
+        self.K_learning_phase = K.learning_phase()
+        self.boxes, self.scores, self.classes = self.generate()
+   
     def _get_class(self):
         classes_path = os.path.expanduser(self.classes_path)
         with open(classes_path) as f:
@@ -110,13 +119,22 @@ class YOLO(object):
         print(image_data.shape)
         image_data /= 255.
         image_data = np.expand_dims(image_data, 0)  # Add batch dimension. 
+        '''
+        out_boxes, out_scores, out_classes = self.sess.run(
+            [self.boxes, self.scores, self.classes],
+            feed_dict={
+                self.yolo_model.input: image_data,
+                self.input_image_shape: [image.size[1], image.size[0]]
+                #,K.learning_phase(): 0
+            })
+        '''
 
         out_boxes, out_scores, out_classes = self.sess.run(
             [self.boxes, self.scores, self.classes],
             feed_dict={
                 self.yolo_model.input: image_data,
                 self.input_image_shape: [image.size[1], image.size[0]],
-                K.learning_phase(): 0
+                self.K_learning_phase: 0
             })
 
         print('Found {} boxes for {}'.format(len(out_boxes), 'img'))
@@ -145,7 +163,8 @@ class YOLO(object):
                 bottom = min(image.size[1], np.floor(bottom + 0.5).astype('int32'))
                 right = min(image.size[0], np.floor(right + 0.5).astype('int32'))
                 print(label, (left, top), (right, bottom))
-                roi_info.append([label, score, (left, top), (right, bottom)])
+                #roi_info.append([label, score, (left, top), (right, bottom)])
+                roi_info.append([c, score, left, top, right, bottom])
                 if top - label_size[1] >= 0:
                     text_origin = np.array([left, top - label_size[1]])
                 else:

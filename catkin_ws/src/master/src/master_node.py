@@ -28,7 +28,7 @@ class Master(object):
         
 
         # Subscribers
-        self.GetPos = rospy.Subscriber('position',Pose2D, self.GetPos_callback, queue_size=1)
+        self.GetPos = rospy.Subscriber('car_pose',Pose2D, self.GetPos_callback, queue_size=1)
         self.coord_subscriber = rospy.Subscriber('Coord', Coordination, self.coord_callback, queue_size=1)
     
 

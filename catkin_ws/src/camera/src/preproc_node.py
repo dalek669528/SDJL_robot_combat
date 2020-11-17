@@ -42,7 +42,7 @@ class Preprocess(object):
         self.target_color = [0, 0, 0]
         # Subscribers
         self.master_info = rospy.Subscriber('master_info', Master_info, self.master_info_callback, queue_size=1)
-        self.GetPos = rospy.Subscriber('position', Pose2D, self.GetPos_callback, queue_size=1)
+        self.GetPos = rospy.Subscriber('car_pose', Pose2D, self.GetPos_callback, queue_size=1)
         self.RawRGB = rospy.Subscriber('RawRGB', Image, self.RGB_callback, queue_size=1)
         self.RawDepth = rospy.Subscriber('RawDepth', Image, self.Depth_callback, queue_size=1)
 
@@ -221,7 +221,7 @@ class Preprocess(object):
         rgb_image[:, rgb_image.shape[1]-self.detect_bounding_x2:rgb_image.shape[1]] = [0, 0, 0]
         rgb_image[0:self.detect_bounding_y1, :] = [0, 0, 0]
         rgb_image[rgb_image.shape[0]-self.detect_bounding_y2:rgb_image.shape[0], :] = [0, 0, 0]
-        # self.stage_index = 1
+        self.stage_index = 2
         if self.stage_index == 0:
             self.StageOne(rgb_image, depth_image) # return the coordination and the color of the largest object
         elif self.stage_index == 1:
@@ -269,7 +269,7 @@ if __name__ == '__main__':
     # preprocess.detect_bounding_x2 = 100
     # preprocess.detect_bounding_y1 = 0
     # preprocess.detect_bounding_y2 = 0
-    # preprocess.open_flag = 1
+    preprocess.open_flag = 1
     
     try:
         rospy.spin()
