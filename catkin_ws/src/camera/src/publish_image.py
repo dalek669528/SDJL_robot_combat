@@ -41,14 +41,14 @@ class Camera(object):
    
   def publishImage(self):
     time_count = 1
-    path = '/home/dick/SDJL_robot_combat/catkin_ws/src/camera/data/realsense/video_frames/'
-    folder = 'test/'
-    frame_index = 0
+    path = '/home/dick/SDJL_robot_combat/catkin_ws/src/camera/data/realsense/videos/'
+    folder = 'stage1/'
+    # frame_index = 0
     if not os.path.exists(path+folder):
         os.makedirs(path+folder)
-    # file_name = 'testvideo.mp4'
-    # fourcc = cv2.VideoWriter_fourcc(*'MPEG')
-    # output = cv2.VideoWriter('testvideo.avi', fourcc, 3.0, (self.image_width, self.image_height))
+    file_name = '00'
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    output = cv2.VideoWriter(path+folder+file_name+'.avi', fourcc, 3.0, (self.image_width, self.image_height))
     while(not rospy.is_shutdown()):
       try:
         frames =  self.pipeline.wait_for_frames()
@@ -71,8 +71,8 @@ class Camera(object):
         flipped_depth = cv2.flip(depth_image, -1)
         
         # record the video(by save image)
-        cv2.imwrite(path + folder + str(frame_index) + '.png', flipped_rgb)
-        frame_index += 1
+        # cv2.imwrite(path + folder + str(frame_index) + '.png', flipped_rgb)
+        # frame_index += 1
 
         rospy.loginfo('Publish image.')
         msg_rgb_frame          = CvBridge().cv2_to_imgmsg(flipped_rgb)

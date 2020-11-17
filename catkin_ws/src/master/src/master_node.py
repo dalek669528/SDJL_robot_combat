@@ -162,7 +162,7 @@ class Master(object):
         self.master_info.color = self.color_list[self.stage_index]
         self.pub_master_info_msg.publish(self.master_info)
 
-        sleep(5)
+        # sleep(5)
         target_coord =  self.target_coord_list[self.stage_index]# [0,20](cm)
         print(self.object_color)
         if ((self.object_color != target_color[0]) and (self.object_color != target_color[1])):
