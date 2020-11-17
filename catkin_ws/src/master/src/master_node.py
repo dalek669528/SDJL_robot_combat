@@ -24,6 +24,7 @@ class Master(object):
         self.pub_master_info_msg = rospy.Publisher('master_info', Master_info, queue_size=1)
         self.pub_arm_msg   = rospy.Publisher("arm_cmd", String, queue_size=1)
         self.pub_motor_msg = rospy.Publisher('motor_cmd', String, queue_size=1)
+        self.pub_serial_msg = rospy.Publisher('serial_cmd', String, queue_size=1)
         
 
         # Subscribers
@@ -43,7 +44,7 @@ class Master(object):
         self.master_info = Master_info()
         self.target_color_list = [['red', 'green'], ['green', 'blue'], ['green']]
         self.target_offset_list = [1, 1.5, 7.5, 2]
-        self.target_coord_list = [[200, 0], [185, 0], [200, 0]]
+        self.target_coord_list = [[0, 200], [0, 185], [0, 100]]
         self.color_list = [[1, 1, 0], [0, 1, 1], [0, 1, 0]]
         self.detect_bounding_list = [[100, 100, 0, 100], [0, 0, 0, 0], [0, 0, 0, 0]]
         self.object_color = ""
@@ -73,8 +74,14 @@ class Master(object):
                   ['x','-35','y','350']]
 
         self.map3=[['y','244.76','x','-70','y','306.16','x','0']]
+        # the map for doing calibration by the board
+        # self.map3=[['y','244.76'],
+        #           ['x','-70','y','306.16','x','0']]
         self.maps.append([self.map1, self.map2, self.map3])
         self.maps = self.maps[0]
+
+        self.stop()
+
 
     #Camera
     def coord_callback(self, msg):
@@ -139,7 +146,7 @@ class Master(object):
     
     def stop(self):
         self.cmd.data = "0 "
-        self.pub_motor_msg.publish(self.cmd)
+        self.pub_serial_msg.publish(self.cmd)
     
     #Arm   
     def publishArm(self, action, y, z):
@@ -156,11 +163,12 @@ class Master(object):
         self.pub_master_info_msg.publish(self.master_info)
 
         sleep(5)
-        # target_color = target_color # red/green/blue
-        target_coord =  target_coord_list[self.stage_index]# [0,20](cm)
+        target_coord =  self.target_coord_list[self.stage_index]# [0,20](cm)
         print(self.object_color)
         if ((self.object_color != target_color[0]) and (self.object_color != target_color[1])):
-            # self.Move2Pos_related(0, 20)
+            if self.stage_index == 0:
+                self.Move2Pos_related(0, 20)
+
             print('Skip')
             return False, 0, 0
         else:
@@ -171,6 +179,7 @@ class Master(object):
             if(self.object_color == 'Nothing'): # Nothing detected!!!
                 print('Nothing detected!!!')
                 break
+            print('move: '+str((self.object_coord[0] - target_coord[0])/10))
             self.Move2Pos_related((self.object_coord[0] - target_coord[0])/10, 0)
             sleep(1)
         
@@ -179,21 +188,21 @@ class Master(object):
         # print('Desire move(relatef): ', (self.object_coord[0] - target_coord[0])/10, (self.object_coord[1] - target_coord[1])/10)
         # self.Move2Pos_related((self.object_coord[0] - target_coord[0])/10, 0)
         # sleep(3)
-        
-        self.Move2Pos_related(0, (self.object_coord[1] - target_coord[1])/10)
+        object_coord = self.object_coord.copy()
+        self.Move2Pos_related(0, (object_coord[1] - target_coord[1])/10)
         sleep(1)
         
         self.master_info.open_flag = 0
         self.pub_master_info_msg.publish(self.master_info)
-        print('modify finished')
+        print('modify finished', object_coord[1])
         if self.stage_index == 0:
-            return True, (object_coord[1]+1.5)/10, object_coord[2]/10
+            return True, (target_coord[1])/10, object_coord[2]/10
         elif (self.stage_index == 1) and move_count%2 == 0:
-            return True, (object_coord[1]+1.5)/10, object_coord[2]/10
+            return True, (self.object_coord[1]+1.5)/10, self.object_coord[2]/10
         elif (self.stage_index == 1) and move_count%2 == 1:
-            return True, (object_coord[1]+7.5)/10, object_coord[2]/10
+            return True, (self.object_coord[1]+7.5)/10, self.object_coord[2]/10
         elif self.stage_index == 2:
-            return True, (object_coord[1]+2)/10, object_coord[2]/10
+            return True, (self.object_coord[1]+2)/10, self.object_coord[2]/10
 
     def stage(self, index):
         finish_flag = False
@@ -204,16 +213,16 @@ class Master(object):
         arm_action_number = len(self.arm_action_list[self.stage_index])
         print('\n\nGet in Stage ' + str(self.stage_index) + ',  move_munber : ' + str(move_number) + ' arm_action_number : ' + str(arm_action_number))
         
-        # self.pub_master_info_msg.publish(self.stage_index) # publish current stage to pre_proc.py to change between rgb/BGremoved_rgb
+        # self.pub_master_info_msg.publish(self.stage_index) # publish current stage to preproc_node.py to change between rgb/BGremoved_rgb
         move_count = 0
         arm_action_count = 0
         movement = 'Move'
-        while finish_flag == False:
+        while finish_flag == False and (not rospy.is_shutdown()):
             print('\nMovement : ' + movement)
             if movement == 'Move':
                 if move_count < (move_number):
                     print('Move task : '+  str(move_count))
-                    # self.Move2PosS13(self.stage_index,move_count)
+                    self.Move2PosS13(self.stage_index,move_count)
                     move_count += 1
                     movement = 'CheckAndModify'
                 else:
@@ -228,6 +237,7 @@ class Master(object):
                 arm_action = self.arm_action_list[self.stage_index][arm_action_count % arm_action_number]
                 print(arm_action + ' ' + str(self.arm_y) + ' ' + str(self.arm_z))
                 self.publishArm(arm_action, self.arm_y, self.arm_z)
+                sleep(5)
                 arm_action_count += 1
                 movement = 'Move'
         self.master_info.open_flag = 0
@@ -239,14 +249,14 @@ if __name__ == '__main__':
     master = Master()
     sleep(0.5)
 
-    # master.stage(0)
-    master.stage(1)
+    master.stage(0)
+    # master.stage(1)
 
     master.stop()
 
-    while(1):
-        master.cmd.data = raw_input('INPUT (\'q\' to quit):')
-        if(master.cmd.data == "q"):
-            break
-        master.pub_arm_msg.publish(master.cmd)
+    # while(not rospy.is_shutdown()):
+    #     master.cmd.data = raw_input('INPUT (\'q\' to quit):')
+    #     if(master.cmd.data == "q"):
+    #         break
+    #     master.pub_arm_msg.publish(master.cmd)
         

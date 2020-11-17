@@ -131,7 +131,7 @@ class Serial_driver(object):
     def moveArm(self, action, y, z):
         #action_list = ['Stamp', 'Pick', 'Place', 'Push']
         action_flag = False
-        action_dict = {'Stamp': [[222], [7, 26], [20]], 'Pick': [[221], [12.5, 21.5], [-14]], 
+        action_dict = {'Stamp': [[222], [7, 26], [20]], 'Pick': [[221], [12.5, 21.5], [-16]], 
                        'Place': [[222], [7, 26], [20]], 'Push': [[222], [7, 26], [20]]}
         
         if (y > action_dict[action][1][0]) & (y < action_dict[action][1][1]):
@@ -147,7 +147,8 @@ class Serial_driver(object):
             self.ser.write(cmd)
 
     def listener(self):
-        sleep(1)
+        for _ in range(8):
+            s = self.ser.readline()
         while (self.ser.isOpen() and (not self.terminate) and (not rospy.is_shutdown())):
             # sleep(self.T/1000.0)
             # self.ser.write("4\n")
@@ -162,7 +163,7 @@ class Serial_driver(object):
                 self.arm_angle[1] = float(arr[6])
                 self.arm_angle[2] = float(arr[7])
                 self.arm_angle[3] = float(arr[8])
-                self.slide_encoder = int(arr[9])
+                # self.slide_encoder = int(arr[9])
                 self.pub_pos.publish(self.car_pose);
 
         self.ser.close()

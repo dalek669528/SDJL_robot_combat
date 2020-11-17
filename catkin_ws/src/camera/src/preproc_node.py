@@ -74,9 +74,7 @@ class Preprocess(object):
         detected_image, roi_array, color_count = detect_color(rgb_image, 0.3)
         #detected_image, roi_array, color_count = detect_color(removeBG_rgb, 0.3)
         removeBG_rgb = self.get_filted_image(meter, rgb_image, depth_image, 'rgb')
-        # cv2.imshow('removeBG_rgb', removeBG_rgb)
-
-        cv2.imshow('Detected image', detected_image)
+        cv2.imshow('Stage1', detected_image)
         cv2.waitKey(1)
         if roi_array.shape[0] == 0: # Nothing detected
             print('First stage: Nothing detected.')
@@ -128,7 +126,7 @@ class Preprocess(object):
         removeBG_depth = self.get_filted_image(meter, rgb_image, depth_image, 'depth')
         detected_image, roi_array, color_count = detect_color(removeBG_rgb, 0.3, red = False)
         # cv2.imshow('filted rgb', removeBG_rgb)
-        cv2.imshow('detected', detected_image)
+        cv2.imshow('Stage2', detected_image)
         cv2.waitKey(1)
         if roi_array.shape[0] == 0: # Nothing detected
             print('Second stage: Nothing detected.')
@@ -163,7 +161,11 @@ class Preprocess(object):
         meter = 0.5
         removeBG_rgb = self.get_filted_image(meter, rgb_image, depth_image, 'rgb')
         removeBG_depth = self.get_filted_image(meter, rgb_image, depth_image, 'depth')
+        # if self.stage_index == 30:
+
         detected_image, roi_array, color_count = detect_color(removeBG_rgb, 0.3, red = False, blue=False)
+        cv2.imshow('Stage3', detected_image)
+        cv2.waitKey(1)
         if color_count[1] == 0: # Green 'E' is not detected
             print('Third stage: Nothing detected.')
             coord_msg.data = [0, -1, 0]
@@ -204,7 +206,7 @@ class Preprocess(object):
                 depth_image = self.depth_image.copy()
         except CvBridgeError as e:
             print(e)
-        #cv2.imwrite('b.jpg', rgb_image)
+        # cv2.imwrite('b.jpg', rgb_image)
         # cv2.imshow('rgb', rgb_image)
         # cv2.waitKey(1)
 
@@ -214,12 +216,12 @@ class Preprocess(object):
         
         # self.t = time.time()        
         
-        #print('1', time.time()-self.time)
+        # print('1', time.time()-self.time)
         rgb_image[:, 0:self.detect_bounding_x1] = [0, 0, 0]
         rgb_image[:, rgb_image.shape[1]-self.detect_bounding_x2:rgb_image.shape[1]] = [0, 0, 0]
         rgb_image[0:self.detect_bounding_y1, :] = [0, 0, 0]
         rgb_image[rgb_image.shape[0]-self.detect_bounding_y2:rgb_image.shape[0], :] = [0, 0, 0]
-        self.stage_index = 1
+        # self.stage_index = 1
         if self.stage_index == 0:
             self.StageOne(rgb_image, depth_image) # return the coordination and the color of the largest object
         elif self.stage_index == 1:
@@ -227,7 +229,7 @@ class Preprocess(object):
         elif self.stage_index == 2:
             self.StageThree(rgb_image, depth_image) # return the coordination of the largest green object
 
-        #return 0
+        # return 0
 
     def Depth_callback(self, data):
         try:
@@ -258,11 +260,6 @@ class Preprocess(object):
         except:
             print('Something wrong in Master_info Subscriber')
 
-    def writeVideo(self, frame, file_name):
-        fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        output = cv2.VideoWriter(file_name, fourcc, 3.0, (640, 360))
-        output.write(frame)
-
 if __name__ == '__main__':
     rospy.init_node("ImagePreprocess",anonymous=False)
     preprocess = Preprocess()
@@ -272,7 +269,7 @@ if __name__ == '__main__':
     # preprocess.detect_bounding_x2 = 100
     # preprocess.detect_bounding_y1 = 0
     # preprocess.detect_bounding_y2 = 0
-    preprocess.open_flag = 1
+    # preprocess.open_flag = 1
     
     try:
         rospy.spin()
