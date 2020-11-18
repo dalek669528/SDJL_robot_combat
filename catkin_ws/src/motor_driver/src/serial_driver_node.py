@@ -106,11 +106,11 @@ class Serial_driver(object):
             # print(cmd)
             self.ser.write(cmd)
         if(joy_msg.buttons[4]):
-            cmd = "3 2 " + str(self.slide_encoder - self.encoder_gain) + "\n"
+            cmd = "3 2 " + str(self.slide_encoder.data - self.encoder_gain) + "\n"
             # print(cmd)
             self.ser.write(cmd)
         if(joy_msg.buttons[5]):
-            cmd = "3 2 " + str(self.slide_encoder + self.encoder_gain) + "\n"
+            cmd = "3 2 " + str(self.slide_encoder.data + self.encoder_gain) + "\n"
             # print(cmd)
             self.ser.write(cmd)
 
@@ -151,6 +151,7 @@ class Serial_driver(object):
             self.ser.write(cmd)
 
     def listener(self):
+        sleep(5)
         self.ser.write("4 1\n")
         for _ in range(8):
             s = self.ser.readline()

@@ -8,7 +8,7 @@ import pyrealsense2 as rs
 import time
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
-from std_msgs.msg import Int32
+from std_msgs.msg import Int32, Float32MultiArray
 from camera.msg import Coordination, Master_info
 from geometry_msgs.msg import Pose2D
 from detectROI import detect_color
@@ -40,16 +40,18 @@ class Preprocess(object):
         self.detect_bounding_y2 = 0
         self.open_flag = 0
         self.target_color = [0, 0, 0]
+        self.yolo_detect_finish_flag = False
         # Subscribers
         self.master_info = rospy.Subscriber('master_info', Master_info, self.master_info_callback, queue_size=1)
         self.GetPos = rospy.Subscriber('car_pose', Pose2D, self.GetPos_callback, queue_size=1)
         self.RawRGB = rospy.Subscriber('RawRGB', Image, self.RGB_callback, queue_size=1)
         self.RawDepth = rospy.Subscriber('RawDepth', Image, self.Depth_callback, queue_size=1)
-
+        self.DetectResult = rospy.Subscriber('DetectResult', Float32MultiArray, self.Detect_callback, queue_size=1)
 
         # Publishers
         # self.Color = rospy.Publisher('Color', Int32, queue_size=1) # publish max detected color
         self.Coord = rospy.Publisher('Coord', Coordination, queue_size=1) # publish coordination of max color
+        self.DetectImage = rospy.Publisher('DetectImage', Image, queue_size=1)
         
     def get_filted_image(self, meter, rgb_image, depth_image, image_type): # get distance-filted image type:rgb, depth
         clipping_distance = meter / self.depth_scale
@@ -67,10 +69,22 @@ class Preprocess(object):
             )
         return filted_image
 
+    def StageOne_Yolo(self, rgb_image, depth_image):
+        print('Publish to yolo')
+        msg_rgb_frame = CvBridge().cv2_to_imgmsg(rgb_image)
+        self.DetectImage.publish(msg_rgb_frame)
+        self.yolo_detect_finish_flag = False
+
+        while self.yolo_detect_finish_flag == True:
+            sleep(0.1)
+
+
+
     def StageOne(self, rgb_image, depth_image):
         # color_msg = Int32()
         coord_msg = Coordination()
         meter = 1
+        
         detected_image, roi_array, color_count = detect_color(rgb_image, 0.3)
         #detected_image, roi_array, color_count = detect_color(removeBG_rgb, 0.3)
         removeBG_rgb = self.get_filted_image(meter, rgb_image, depth_image, 'rgb')
@@ -221,15 +235,23 @@ class Preprocess(object):
         rgb_image[:, rgb_image.shape[1]-self.detect_bounding_x2:rgb_image.shape[1]] = [0, 0, 0]
         rgb_image[0:self.detect_bounding_y1, :] = [0, 0, 0]
         rgb_image[rgb_image.shape[0]-self.detect_bounding_y2:rgb_image.shape[0], :] = [0, 0, 0]
-        self.stage_index = 2
+        #self.stage_index = 0
         if self.stage_index == 0:
-            self.StageOne(rgb_image, depth_image) # return the coordination and the color of the largest object
+            #self.StageOne(rgb_image, depth_image) # return the coordination and the color of the largest object
+            self.StageOne_Yolo(rgb_image, depth_image) # return the coordination and the color of the largest object
+
         elif self.stage_index == 1:
             self.StageTwo(rgb_image, depth_image) # return the closest coordination of target color
         elif self.stage_index == 2:
             self.StageThree(rgb_image, depth_image) # return the coordination of the largest green object
 
         # return 0
+
+    def Detect_callback(self, data):
+        roi_array = data
+        print(roi_array)    
+        self.yolo_detect_finish_flag = True
+        
 
     def Depth_callback(self, data):
         try:
@@ -264,11 +286,11 @@ if __name__ == '__main__':
     rospy.init_node("ImagePreprocess",anonymous=False)
     preprocess = Preprocess()
     
-    # preprocess.stage_index = 0
-    # preprocess.detect_bounding_x1 = 100
-    # preprocess.detect_bounding_x2 = 100
-    # preprocess.detect_bounding_y1 = 0
-    # preprocess.detect_bounding_y2 = 0
+    preprocess.stage_index = 0
+    #preprocess.detect_bounding_x1 = 100
+    #preprocess.detect_bounding_x2 = 100
+    #preprocess.detect_bounding_y1 = 0
+    #preprocess.detect_bounding_y2 = 100
     preprocess.open_flag = 1
     
     try:

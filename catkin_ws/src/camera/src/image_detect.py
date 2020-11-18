@@ -6,9 +6,9 @@ import argparse
 import numpy as np
 from PIL import Image as Img
 from yolo import YOLO
-#from cv_bridge import CvBridge, CvBridgeError
 from time import sleep
 from sensor_msgs.msg import Image
+from std_msgs.msg import Float32MultiArray
 
 class Detector(object):
     def __init__(self):
@@ -19,11 +19,10 @@ class Detector(object):
         r_image = self.yolo.detect_image(image)
 
         # Publications
-        #self.DetectResult = rospy.Publisher('DetectResult', , queue_size=1) # publish coordination of max color
-
+        self.DetectResult = rospy.Publisher('DetectResult', Float32MultiArray, queue_size=1)
         # Subscriptions
-        #self.DetectImage = rospy.Subscriber('DetectImage', Image, self.DetectImage_callback, queue_size=1)
-        self.DetectImage = rospy.Subscriber('RawRGB', Image, self.DetectImage_callback, queue_size=1)
+        self.DetectImage = rospy.Subscriber('DetectImage', Image, self.DetectImage_callback, queue_size=1)
+        #self.DetectImage = rospy.Subscriber('RawRGB', Image, self.DetectImage_callback, queue_size=1)
     
         #self.detect_img()
    
@@ -36,8 +35,12 @@ class Detector(object):
         rgb_image = Img.fromarray(image_array) 
         #rgb_image.show()
         r_image,roi_info = self.yolo.detect_image(rgb_image)
-        print('Result', roi_info)
+        roi_info_array = roi_info if (roi_info != []) else [0.0]
+        print('Result', roi_info_array)
         #r_image.show()
+        ros_roi_array = Float32MultiArray(data=roi_info_array)
+        self.DetectResult.publish(ros_roi_array)
+
     
 if __name__ == '__main__':
 

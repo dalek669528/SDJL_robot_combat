@@ -30,6 +30,7 @@ class Master(object):
         # Subscribers
         self.GetPos = rospy.Subscriber('car_pose',Pose2D, self.GetPos_callback, queue_size=1)
         self.coord_subscriber = rospy.Subscriber('Coord', Coordination, self.coord_callback, queue_size=1)
+        self.GetPos_arm = rospy.Subscriber('arm_pose',Pose2D, self.GetPosArm_callback, queue_size=1)
     
 
         self.stage_index = 0
@@ -39,6 +40,9 @@ class Master(object):
         self.arm_action_list =  [['Stamp'],
                                 ['Pick','Place'],
                                 ['Push']]
+        self.armflag = 0
+        self.armY = 0
+        self.armZ = 0
 
         #Camera variable
         self.master_info = Master_info()
@@ -152,7 +156,12 @@ class Master(object):
     def publishArm(self, action, y, z):
         self.cmd.data = action + ' ' + str(y) + ' '  + str(z)
         self.pub_arm_msg.publish(self.cmd)
-        
+    
+    def GetPosArm_callback(self, data):
+        self.armY = data.x
+        self.armZ = data.y
+        self.armflag = data.theta
+
     #Combine
     def check_modify(self, target_color, move_count):
         #subscribe color and coordination
@@ -236,21 +245,54 @@ class Master(object):
             elif movement == 'MoveArm':
                 arm_action = self.arm_action_list[self.stage_index][arm_action_count % arm_action_number]
                 print(arm_action + ' ' + str(self.arm_y) + ' ' + str(self.arm_z))
-                self.publishArm(arm_action, self.arm_y, self.arm_z)
-                sleep(5)
+                if(self.arm_y > self.armY):
+                    self.publishArm(arm_action, self.arm_y, self.arm_z)
+                sleep(0.5)
+                while(not(self.armflag)):
+                    pass
+                Move2Pos_related(0,self.arm_y-self.armY)
                 arm_action_count += 1
                 movement = 'Move'
         self.master_info.open_flag = 0
         self.pub_master_info_msg.publish(self.master_info)
         print('\n\nGet out Stage ' + str(self.stage_index))
 
+    def test(self, index):
+        finish_flag = False
+        self.master_info.open_flag = 0
+        self.pub_master_info_msg.publish(self.master_info)
+        self.stage_index = index
+        move_number = len(self.maps[self.stage_index])
+        arm_action_number = len(self.arm_action_list[self.stage_index])
+        print('\n\nGet in Stage ' + str(self.stage_index) + ',  move_munber : ' + str(move_number) + ' arm_action_number : ' + str(arm_action_number))
+        
+        # self.pub_master_info_msg.publish(self.stage_index) # publish current stage to preproc_node.py to change between rgb/BGremoved_rgb
+        move_count = 0
+        arm_action_count = 0
+        movement = 'Move'
+        action_flag, self.arm_y, self.arm_z= self.check_modify(self.target_color_list[self.stage_index], move_count)                
+        print('Do action or not : ' + str(action_flag))
+        movement  = 'MoveArm' if action_flag else 'Move'
+        arm_action = self.arm_action_list[self.stage_index][arm_action_count % arm_action_number]
+        print(arm_action + ' ' + str(self.arm_y) + ' ' + str(self.arm_z))
+        if(self.arm_y > self.armY):
+            self.publishArm(arm_action, self.arm_y, self.arm_z)
+        sleep(0.5)
+        while(not(self.armflag)):
+            pass
+        self.Move2Pos_related(0,self.arm_y-self.armY)
+        arm_action_count += 1
+        movement = 'Move'
+
+
 if __name__ == '__main__':
     rospy.init_node("master",anonymous=False)
     master = Master()
     sleep(0.5)
 
-    master.stage(0)
+    #master.stage(0)
     # master.stage(1)
+    master.test(0)
 
     master.stop()
 

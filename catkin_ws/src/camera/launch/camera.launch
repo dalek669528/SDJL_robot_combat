@@ -1,0 +1,23 @@
+<launch>
+    <node pkg="camera" type="publish_image.py" name="CameraImagePublisher" output="screen">
+    </node> 
+    <!-- Subscribe Topics -->
+    <!-- -->
+    <!-- Publish Topics -->
+    <!-- "~RawRGB": sensor_msgs/Image. RGB image read from camera -->
+    <!-- "~RawDepth": sensor_msgs/Image. Depth image read from camera -->
+
+    <node pkg="camera" type="preproc_node.py" name="ImagePreprocess" output="screen">
+    </node> 
+    <!-- Subscribe Topics -->
+    <!-- "master_info": camera_msgs/Master_info. -->
+    <!-- "car_pose": geometry_msgs/Pose2D. -->
+    <!-- "RawRGB": sensor_msgs/Image. RGB image read from camera -->
+    <!-- "RawDepth": sensor_msgs/Image. Depth image read from camera -->
+    <!-- "DetectResult": std_msgs/Float32MultiArray. Image from pre_process to be detected -->
+
+    <!-- Publish Topics -->
+    <!-- "~Coord": camera_msgs/Coordination. -->
+    <!-- "~DetectImage": sensor_msgs/Image. -->
+
+</launch>
