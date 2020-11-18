@@ -53,6 +53,7 @@ class Preprocess(object):
         # self.Color = rospy.Publisher('Color', Int32, queue_size=1) # publish max detected color
         self.Coord = rospy.Publisher('Coord', Coordination, queue_size=1) # publish coordination of max color
         self.DetectImage = rospy.Publisher('DetectImage', Image, queue_size=1)
+        self.ResultImage = rospy.Publisher('ResultImage', Image, queue_size=1)
         
     def get_filted_image(self, meter, rgb_image, depth_image, image_type): # get distance-filted image type:rgb, depth
         clipping_distance = meter / self.depth_scale
@@ -70,7 +71,7 @@ class Preprocess(object):
             )
         return filted_image
 
-    def StageOne_Yolo(self, rgb_image, depth_image):
+    def Yolo(self, rgb_image):
         print('Publish to yolo')
         msg_rgb_frame = CvBridge().cv2_to_imgmsg(rgb_image)
         self.DetectImage.publish(msg_rgb_frame)
@@ -79,14 +80,19 @@ class Preprocess(object):
         while self.yolo_detect_finish_flag == False:
             time.sleep(0.1)
         print(self.roi_info, self.roi_info.shape)
+        detected_image = rgb_image.copy()
+        color_count = np.array([0,0,0])
         if len(self.roi_info) == 1 : 
-            return
+            return detected_image, np.array([]), color_count
+
         roi_array = np.reshape(self.roi_info, (-1, 6))
+ 
+        roi_array = np.sort(roi_array, axis=0)
         for roi in roi_array:
             calsses = int(roi[0])
             x1 = int(roi[2])
-            x2 = int(roi[3])
-            y1 = int(roi[4])
+            y1 = int(roi[3])
+            x2 = int(roi[4])
             y2 = int(roi[5])
             if calsses == 0:
                 color = (0, 0, 255)
@@ -97,25 +103,29 @@ class Preprocess(object):
             elif calsses == 2:
                 color = (255, 0, 0)
                 color_string = 'Blue'
+            color_count[calsses] += 1
 
-            
-            cv2.rectangle(rgb_image, (x1, y1), (x2, y2), color, 2)
-            cv2.putText(rgb_image, color_string, (x1, y1+14), cv2.FONT_HERSHEY_DUPLEX, 0.5, color, 1, cv2.LINE_AA)
-            cv2.imshow('Yolo', rgb_image)
-            cv2.waitKey(1)
+            cv2.rectangle(detected_image, (x1, y1), (x2, y2), color, 2)
+            cv2.putText(detected_image, color_string, (x1, y1+14), cv2.FONT_HERSHEY_DUPLEX, 0.5, color, 1, cv2.LINE_AA)
+        print(color_count)
+        roi_array = roi_array[:, 2:].astype(int)
+        print(roi_array)
+        #cv2.imshow('Yolo', detected_image)
+        #cv2.waitKey(1)
 
-
+        return detected_image, roi_array, color_count
 
     def StageOne(self, rgb_image, depth_image):
         # color_msg = Int32()
         coord_msg = Coordination()
         meter = 1
         
-        detected_image, roi_array, color_count = detect_color(rgb_image, 0.3)
+        detected_image, roi_array, color_count = self.Yolo(rgb_image)
+        #detected_image, roi_array, color_count = detect_color(rgb_image, 0.3)
         #detected_image, roi_array, color_count = detect_color(removeBG_rgb, 0.3)
         removeBG_rgb = self.get_filted_image(meter, rgb_image, depth_image, 'rgb')
-        cv2.imshow('Stage1', detected_image)
-        cv2.waitKey(1)
+        # cv2.imshow('Stage1', detected_image)
+        # cv2.waitKey(1)
         if roi_array.shape[0] == 0: # Nothing detected
             print('First stage: Nothing detected.')
             coord_msg.data = [0, -1, 0]
@@ -166,8 +176,9 @@ class Preprocess(object):
         removeBG_depth = self.get_filted_image(meter, rgb_image, depth_image, 'depth')
         detected_image, roi_array, color_count = detect_color(removeBG_rgb, 0.3, red = False)
         # cv2.imshow('filted rgb', removeBG_rgb)
-        cv2.imshow('Stage2', detected_image)
-        cv2.waitKey(1)
+        #cv2.imshow('Stage2', detected_image)
+        #cv2.waitKey(1)
+        self.ResultImage.publish(CvBridge().cv2_to_imgmsg(detected_image))
         if roi_array.shape[0] == 0: # Nothing detected
             print('Second stage: Nothing detected.')
             coord_msg.data = [0, -1, 0]
@@ -233,8 +244,8 @@ class Preprocess(object):
 
     def RGB_callback(self, data):
         try:
-            if not self.open_flag:
-                return
+            # if not self.open_flag:
+            #     return
             self.seq_rgb = data.header.seq
             #print('RGB_callback: %d' % (self.seq_rgb))
             if (self.seq_depth - self.seq_rgb) > self.frame_loss:
@@ -261,11 +272,9 @@ class Preprocess(object):
         rgb_image[:, rgb_image.shape[1]-self.detect_bounding_x2:rgb_image.shape[1]] = [0, 0, 0]
         rgb_image[0:self.detect_bounding_y1, :] = [0, 0, 0]
         rgb_image[rgb_image.shape[0]-self.detect_bounding_y2:rgb_image.shape[0], :] = [0, 0, 0]
-        #self.stage_index = 0
+        self.stage_index = 0
         if self.stage_index == 0:
             self.StageOne(rgb_image, depth_image) # return the coordination and the color of the largest object
-            # self.StageOne_Yolo(rgb_image, depth_image) # return the coordination and the color of the largest object
-
         elif self.stage_index == 1:
             self.StageTwo(rgb_image, depth_image) # return the closest coordination of target color
         elif self.stage_index == 2:
@@ -311,7 +320,7 @@ if __name__ == '__main__':
     rospy.init_node("ImagePreprocess",anonymous=False)
     preprocess = Preprocess()
     
-    # preprocess.stage_index = 0
+    #preprocess.stage_index = 0
     #preprocess.detect_bounding_x1 = 100
     #preprocess.detect_bounding_x2 = 100
     #preprocess.detect_bounding_y1 = 0
@@ -322,3 +331,49 @@ if __name__ == '__main__':
         rospy.spin()
     except KeyboardInterrupt:
         print("Shutting Down...")
+
+
+'''
+    def StageOne_Yolo(self, rgb_image):
+        print('Publish to yolo')
+        msg_rgb_frame = CvBridge().cv2_to_imgmsg(rgb_image)
+        self.DetectImage.publish(msg_rgb_frame)
+        self.yolo_detect_finish_flag = False
+
+        while self.yolo_detect_finish_flag == False:
+            time.sleep(0.1)
+        print(self.roi_info, self.roi_info.shape)
+        if len(self.roi_info) == 1 : 
+            return
+
+        roi_array = np.reshape(self.roi_info, (-1, 6))
+        detected_image = rgb_image.copy()
+        color_count = np.array([0,0,0])
+        roi_array = np.sort(roi_array, axis=0)
+        for roi in roi_array:
+            calsses = int(roi[0])
+            x1 = int(roi[2])
+            y1 = int(roi[3])
+            x2 = int(roi[4])
+            y2 = int(roi[5])
+            if calsses == 0:
+                color = (0, 0, 255)
+                color_string = 'Red'
+            elif calsses == 1:
+                color = (0, 255, 0)
+                color_string = 'Green'
+            elif calsses == 2:
+                color = (255, 0, 0)
+                color_string = 'Blue'
+            color_count[calsses] += 1
+
+            cv2.rectangle(detected_image, (x1, y1), (x2, y2), color, 2)
+            cv2.putText(detected_image, color_string, (x1, y1+14), cv2.FONT_HERSHEY_DUPLEX, 0.5, color, 1, cv2.LINE_AA)
+        print(color_count)
+        roi_array = roi_array[:, 2:]
+        print(roi_array)
+        cv2.imshow('Yolo', detected_image)
+        cv2.waitKey(1)
+
+        return detected_image, roi_array, color_count
+'''

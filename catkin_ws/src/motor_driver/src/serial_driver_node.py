@@ -137,7 +137,7 @@ class Serial_driver(object):
         if( action == 'Stamp' or action == 'Push' ):
             y, z = z, y
         action_flag = False
-        action_dict = {'Stamp': [[211], [9, 20.7], [20]], 'Pick': [[221], [12.5, 21.5], [1]], 
+        action_dict = {'Stamp': [[211], [9, 20.7], [20]], 'Pick': [[221], [12.5, 22.5], [1]], 
                        'Place': [[222], [7, 26], [20]], 'Push': [[231], [9, 20.7], [20]]}
         
         if (y > action_dict[action][1][0]) & (y < action_dict[action][1][1]):
