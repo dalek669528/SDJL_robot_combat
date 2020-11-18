@@ -250,7 +250,7 @@ class Master(object):
                 sleep(0.5)
                 while(not(self.armflag)):
                     pass
-                Move2Pos_related(0,self.arm_y-self.armY)
+                self.Move2Pos_related(0,self.arm_y-self.armY)
                 arm_action_count += 1
                 movement = 'Move'
         self.master_info.open_flag = 0
@@ -291,8 +291,8 @@ if __name__ == '__main__':
     sleep(0.5)
 
     #master.stage(0)
-    # master.stage(1)
-    master.test(0)
+    master.stage(1)
+    # master.test(0)
 
     master.stop()
 

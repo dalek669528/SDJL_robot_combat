@@ -8,7 +8,7 @@ import pyrealsense2 as rs
 import time
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
-from std_msgs.msg import Int32, Float32MultiArray
+from std_msgs.msg import Float32MultiArray
 from camera.msg import Coordination, Master_info
 from geometry_msgs.msg import Pose2D
 from detectROI import detect_color
@@ -41,13 +41,14 @@ class Preprocess(object):
         self.open_flag = 0
         self.target_color = [0, 0, 0]
         self.yolo_detect_finish_flag = False
+        self.roi_info = []
         # Subscribers
         self.master_info = rospy.Subscriber('master_info', Master_info, self.master_info_callback, queue_size=1)
         self.GetPos = rospy.Subscriber('car_pose', Pose2D, self.GetPos_callback, queue_size=1)
         self.RawRGB = rospy.Subscriber('RawRGB', Image, self.RGB_callback, queue_size=1)
         self.RawDepth = rospy.Subscriber('RawDepth', Image, self.Depth_callback, queue_size=1)
         self.DetectResult = rospy.Subscriber('DetectResult', Float32MultiArray, self.Detect_callback, queue_size=1)
-
+       
         # Publishers
         # self.Color = rospy.Publisher('Color', Int32, queue_size=1) # publish max detected color
         self.Coord = rospy.Publisher('Coord', Coordination, queue_size=1) # publish coordination of max color
@@ -75,8 +76,33 @@ class Preprocess(object):
         self.DetectImage.publish(msg_rgb_frame)
         self.yolo_detect_finish_flag = False
 
-        while self.yolo_detect_finish_flag == True:
-            sleep(0.1)
+        while self.yolo_detect_finish_flag == False:
+            time.sleep(0.1)
+        print(self.roi_info, self.roi_info.shape)
+        if len(self.roi_info) == 1 : 
+            return
+        roi_array = np.reshape(self.roi_info, (-1, 6))
+        for roi in roi_array:
+            calsses = int(roi[0])
+            x1 = int(roi[2])
+            x2 = int(roi[3])
+            y1 = int(roi[4])
+            y2 = int(roi[5])
+            if calsses == 0:
+                color = (0, 0, 255)
+                color_string = 'Red'
+            elif calsses == 1:
+                color = (0, 255, 0)
+                color_string = 'Green'
+            elif calsses == 2:
+                color = (255, 0, 0)
+                color_string = 'Blue'
+
+            
+            cv2.rectangle(rgb_image, (x1, y1), (x2, y2), color, 2)
+            cv2.putText(rgb_image, color_string, (x1, y1+14), cv2.FONT_HERSHEY_DUPLEX, 0.5, color, 1, cv2.LINE_AA)
+            cv2.imshow('Yolo', rgb_image)
+            cv2.waitKey(1)
 
 
 
@@ -237,8 +263,8 @@ class Preprocess(object):
         rgb_image[rgb_image.shape[0]-self.detect_bounding_y2:rgb_image.shape[0], :] = [0, 0, 0]
         #self.stage_index = 0
         if self.stage_index == 0:
-            #self.StageOne(rgb_image, depth_image) # return the coordination and the color of the largest object
-            self.StageOne_Yolo(rgb_image, depth_image) # return the coordination and the color of the largest object
+            self.StageOne(rgb_image, depth_image) # return the coordination and the color of the largest object
+            # self.StageOne_Yolo(rgb_image, depth_image) # return the coordination and the color of the largest object
 
         elif self.stage_index == 1:
             self.StageTwo(rgb_image, depth_image) # return the closest coordination of target color
@@ -248,10 +274,9 @@ class Preprocess(object):
         # return 0
 
     def Detect_callback(self, data):
-        roi_array = data
-        print(roi_array)    
+        self.roi_info = np.array(data.data)
+        print(self.roi_info)
         self.yolo_detect_finish_flag = True
-        
 
     def Depth_callback(self, data):
         try:
@@ -286,12 +311,12 @@ if __name__ == '__main__':
     rospy.init_node("ImagePreprocess",anonymous=False)
     preprocess = Preprocess()
     
-    preprocess.stage_index = 0
+    # preprocess.stage_index = 0
     #preprocess.detect_bounding_x1 = 100
     #preprocess.detect_bounding_x2 = 100
     #preprocess.detect_bounding_y1 = 0
     #preprocess.detect_bounding_y2 = 100
-    preprocess.open_flag = 1
+    # preprocess.open_flag = 1
     
     try:
         rospy.spin()

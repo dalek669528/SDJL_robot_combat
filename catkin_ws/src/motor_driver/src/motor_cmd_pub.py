@@ -16,7 +16,7 @@ class Motor_pwm(object):
         self.input()
 
     def input(self):
-        while True:
+        while (not rospy.is_shutdown()):
             self.cmd.data = raw_input('INPUT (\'q\' to quit):')
             self.pub_msg.publish(self.cmd)
             if(self.cmd.data == "q"):

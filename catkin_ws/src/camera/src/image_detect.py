@@ -36,11 +36,11 @@ class Detector(object):
         #rgb_image.show()
         r_image,roi_info = self.yolo.detect_image(rgb_image)
         roi_info_array = roi_info if (roi_info != []) else [0.0]
+        roi_info_array = np.array(roi_info_array).flatten()
         print('Result', roi_info_array)
-        #r_image.show()
+        r_image.show()
         ros_roi_array = Float32MultiArray(data=roi_info_array)
         self.DetectResult.publish(ros_roi_array)
-
     
 if __name__ == '__main__':
 
