@@ -30,7 +30,26 @@ void loop() {
         slide.PWM_Calculate();
         arm.Routine();
         arm.Arm_Control();
+//        switch(print_type){
+//            case 2:
+//                car.printInfo();
+//                break;
+//            case 3:
+//                arm.printInfo(-1);
+//                break;
+//            case 4:
+//                slide.printInfo();
+//                break;
+//            default:
+//                break;
+//        }
+    }
+    if(timer2 >= print_timer + print_period){
+        print_timer = (timer2/(print_period))*(print_period);
         switch(print_type){
+            case 1:
+                printInfo();
+                break;
             case 2:
                 car.printInfo();
                 break;
@@ -39,16 +58,6 @@ void loop() {
                 break;
             case 4:
                 slide.printInfo();
-                break;
-            default:
-                break;
-        }
-    }
-    if(timer2 >= print_timer + print_period){
-        print_timer = (timer2/(print_period))*(print_period);
-        switch(print_type){
-            case 1:
-                printInfo();
                 break;
             default:
                 break;

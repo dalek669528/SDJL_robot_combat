@@ -63,7 +63,7 @@ class Arm{
         servo_struct servo[4];
         const float SERVO_SPEED_INIT = 30;
         float SERVO_SPEED;
-        float y = 0, z = 0, theta = 0;
+        float Y = 0, Z = 0, Theta = 0;
         float pointYZ[2] = {0, 0};
         int workType = 0;
         float serial_Angle_array[4] = {0};
@@ -94,6 +94,9 @@ class Arm{
         }
         bool is_n_singular(float desire_y, float desire_z, float desireAngle_array[]);
         bool is_motion_finish(){
+            return( workType == 0 ) ;
+        }
+        bool is_move_finish(){
             return( servo[0].is_stable() && servo[1].is_stable() && servo[2].is_stable() && servo[3].is_stable());
         }
         int transform(float angle){
@@ -107,8 +110,9 @@ class Arm{
         //Servo const variable
         const int SERVO_POSITIVE[4]       = {-1,    1,  1,  1};
         const int SERVO_OFFSET[4]         = {184,   90, 90, 0};
-        const int SERVO_LOWER_BOUND[4]    = {30,    0,  0,  30};
-        const int SERVO_UPPER_BOUND[4]    = {180, 180, 180, 90};
+        const int SERVO_LOWER_BOUND[4]    = {30,    0,  0,  00};
+        const int SERVO_UPPER_BOUND[4]    = {184, 180, 180, 90};
+        
         //const uint8_t SERVO_INIT_STATE[4]    = {180, 180, 180,    90};
         
         //Servo state

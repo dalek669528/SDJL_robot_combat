@@ -15,7 +15,7 @@ void Arm::Serial_r(String str) {
                 idx = atoi(strtok(NULL, " "));
                 if(idx != -1){
                     SERVO_SPEED = SERVO_SPEED * atof(strtok(NULL, " "));
-                    serial_Angle_array[idx] = ( (atoi(strtok(NULL, " "))?180:0 ) - SERVO_OFFSET[idx]) * SERVO_POSITIVE[idx]; 
+                    serial_Angle_array[idx] = ( (atoi(strtok(NULL, " ")) ? SERVO_UPPER_BOUND[idx] : SERVO_LOWER_BOUND[idx] ) - SERVO_OFFSET[idx]) * SERVO_POSITIVE[idx]; 
                 }
                 else{
                     for(int i=0; i<4; i++)
@@ -35,7 +35,7 @@ void Arm::Serial_r(String str) {
                     pointYZ[i] = atof(strtok(NULL," "));
                 if(pointYZ[0] > ARM_PICK_LOWER_BOUND && pointYZ[0] < ARM_PICK_UPPER_BOUND){
                     float YZ_angle[4];
-                    if(movetoPoint(0, 30, pointYZ, YZ_angle)){
+                    if(movetoPoint(0, 10, pointYZ, YZ_angle)){
                         reset_motion();
                         for(int i = 0 ; i < 4 ; i++){
                              motion_array[0][i] = YZ_angle[i];
@@ -59,7 +59,7 @@ void Arm::Serial_r(String str) {
                 break;
             case 222:
                 for(int i=0; i<2; i++)
-                    pointYZ[i]=atof(strtok(NULL," "));        
+                    pointYZ[i]=atof(strtok(NULL," "));
                 if(pointYZ[0] > ARM_PICK_LOWER_BOUND && pointYZ[0] < ARM_PICK_UPPER_BOUND){
                     float YZ_angle[4];
                     if(movetoPoint(60, 60, pointYZ, YZ_angle)){
@@ -71,7 +71,7 @@ void Arm::Serial_r(String str) {
                         for(int i = 0 ; i < 3 ; i++){
                              motion_array[1][i] = YZ_angle[i];
                         }
-                        motion_array[1][3] = 30;
+                        motion_array[1][3] = 10;
                         motion_array[1][4] = -1;
                         for(int i = 0 ; i < 4 ; i++){
                              motion_array[2][i] = SERVO_READY_STATE[i];
@@ -98,7 +98,7 @@ void Arm::Routine(){
             break;
         case -1:    //can't move
             if(moveServoGroup(-1, SERVO_SINGLUAR_STATE))
-                workType = 0;
+                workType = 112;
             break;
         case 111:
             if(moveServoGroup(-1, SERVO_GETBACK_STATE))
@@ -146,11 +146,7 @@ bool Arm::movetoPoint(float angle_first, float angle_final, float point[], float
     desireAngle_array[2] = -(180 - acos((pow(SERVO_LENGTH[1], 2) + pow(SERVO_LENGTH[2], 2) - pow(y_reference, 2) - pow(z_reference, 2)) / (2 * SERVO_LENGTH[1] * SERVO_LENGTH[2])) / M_PI * 180);
     desireAngle_array[3] = angle_final;
     
-    if (is_n_singular(point[0], point[1],    desireAngle_array))
-        return true;
-    else{
-        return false;
-    }
+    return is_n_singular(point[0], point[1],    desireAngle_array);
 }
 
 bool Arm::fantasyBaby() {
@@ -200,7 +196,7 @@ bool Arm::moveServoGroup(int order, float desireAngle_array[]){
             servo[index_order[order][3]].enable = true;
     }
     caculateYZ();
-    if(is_motion_finish()){
+    if(is_move_finish()){
         return true;
     }
     return false;
@@ -218,11 +214,14 @@ void Arm::set_desire_angle(int servo_index, float desire_angle){
 }
 
 void Arm::caculateYZ(){
-    y = z = 0;
+
+    Y = -ARM_AXIS_OFFSET[0];
+    Z = -ARM_AXIS_OFFSET[1];
+    Theta = 0;
     for(int index=0; index<3; index++){
-        theta += servo[index].desire_angle;
-        y += SERVO_LENGTH[index] * cos(theta / 180 * PI);
-        z += SERVO_LENGTH[index] * sin(theta / 180 * PI);
+        Theta += servo[index].now_angle;
+        Y += SERVO_LENGTH[index] * cos(Theta / 180 * PI);
+        Z += SERVO_LENGTH[index] * sin(Theta / 180 * PI);
     }
 }
 
@@ -232,20 +231,43 @@ bool Arm::is_n_singular(float desire_y, float desire_z, float desireAngle_array[
     y -= ARM_AXIS_OFFSET[0];
     z -= ARM_AXIS_OFFSET[1];
     for(int i = 0 ; i < 3 ; i++){
-        if(desireAngle_array[i] < SERVO_LOWER_BOUND[i] || desireAngle_array[i] > SERVO_UPPER_BOUND[i]){       
-            return false;
-        }
         theta += desireAngle_array[i];
         y += SERVO_LENGTH[i] * cos(theta / 180 * PI);
         z += SERVO_LENGTH[i] * sin(theta / 180 * PI);
     }
     error_y = abs(y - desire_y);
     error_z = abs(z - desire_z);
+
+
+    for(int i = 0 ; i < 3 ; i++){
+        float ang = desireAngle_array[i] * SERVO_POSITIVE[i] + SERVO_OFFSET[i];
+        if(ang < SERVO_LOWER_BOUND[i] || ang > SERVO_UPPER_BOUND[i]){
+//            Serial.print("Singular ang ");
+//            Serial.print(desireAngle_array[0]);
+//            Serial.print(" ");
+//            Serial.print(desireAngle_array[1]);
+//            Serial.print(" ");
+//            Serial.print(desireAngle_array[2]);
+//            Serial.print(" ");
+//            Serial.print(desireAngle_array[3]);
+//            Serial.print("\n");
+            return false;
+        }
+    }
     
     if(error_y < offset && error_z < offset){
         return true;
     }
     else{
+//        Serial.print("Singular yz ");
+//        Serial.print(y);
+//        Serial.print(" ");
+//        Serial.print(z);
+//        Serial.print(" ");
+//        Serial.print(desire_y);
+//        Serial.print(" ");
+//        Serial.print(desire_z);
+//        Serial.print("\n");
         return false;
     }
 }
@@ -282,13 +304,13 @@ void Arm::printInfo(int servo_index) {
     Serial.print(" |");
     for(servo_index = start_idx ; servo_index < end_idx ; servo_index++){
         Serial.print(servo_index);
-        Serial.print(" ang ");
+        Serial.print(" ");
         Serial.print(servo[servo_index].desire_angle);
-        Serial.print("/");
+        Serial.print(" ");
         Serial.print(servo[servo_index].now_angle);
-        Serial.print(" pwm ");
+        Serial.print(" / ");
         Serial.print(servo[servo_index].pwm_desire);
-        Serial.print("/");
+        Serial.print(" ");
         Serial.print(servo[servo_index].pwm_past);
         Serial.print(" st ");
         Serial.print(servo[servo_index].is_stable());

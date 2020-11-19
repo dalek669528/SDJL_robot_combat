@@ -107,7 +107,7 @@ void Slide::Serial_r(String str){
                 Kd_b = atof(strtok(NULL, " "));
                 break;
             default:
-                control_type = -2;
+                control_type = -3;
                 control_type_past = control_type = 0;
                 desire_encode = encoder;
                 pwm = 0;

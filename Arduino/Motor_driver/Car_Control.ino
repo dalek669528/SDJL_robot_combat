@@ -11,37 +11,42 @@ void Car::Serial_r(String str){
                 D.pwm = atoi( strtok(NULL, " ") );
                 break;
             case 2:
-                A.desire_V = atoi( strtok(NULL, " ") );
-                B.desire_V = atoi( strtok(NULL, " ") );
-                C.desire_V = atoi( strtok(NULL, " ") );
-                D.desire_V = atoi( strtok(NULL, " ") );
+                A.desire_V = atof( strtok(NULL, " ") );
+                B.desire_V = atof( strtok(NULL, " ") );
+                C.desire_V = atof( strtok(NULL, " ") );
+                D.desire_V = atof( strtok(NULL, " ") );
                 break;
             case 3:
-                desire_Vx = atoi( strtok(NULL, " ") );
-                desire_Vy = atoi( strtok(NULL, " ") );
-                desire_w = atoi( strtok(NULL, " ") ) * PI / 180.0;
+                desire_Vx = atof( strtok(NULL, " ") );
+                desire_Vy = atof( strtok(NULL, " ") );
+                desire_w = atof( strtok(NULL, " ") ) * PI / 180.0;
                 break;
             case 4:
-                desire_X = atoi( strtok(NULL, " ") );
-                desire_Y = atoi( strtok(NULL, " ") );
+                desire_X = atof( strtok(NULL, " ") );
+                desire_Y = atof( strtok(NULL, " ") );
                 desire_theta = atoi( strtok(NULL, " ") );
                 desire_theta = (desire_theta > 360) ? 360 : desire_theta;
                 desire_theta = (desire_theta < -360) ? -360 : desire_theta;
                 break;
                 break;
             case 5:
-                desire_X += atoi( strtok(NULL, " ") );
-                desire_Y += atoi( strtok(NULL, " ") );
+                desire_X += atof( strtok(NULL, " ") );
+                desire_Y += atof( strtok(NULL, " ") );
                 desire_theta += atoi( strtok(NULL, " ") );
                 desire_theta = (desire_theta > 360) ? 360 : desire_theta;
                 desire_theta = (desire_theta < -360) ? -360 : desire_theta;
                 break;
+            case -2:
+                desire_X = X = atof( strtok(NULL, " ") );
+                desire_Y = Y = atof( strtok(NULL, " ") );
+                desire_theta = theta = atof( strtok(NULL, " ") );
+                break;
             case -1:
                 int changePID, p, i, d; 
                 changePID = atoi( strtok(NULL, " ") );
-                p = atoi( strtok(NULL, " ") );
-                i = atoi( strtok(NULL, " ") );
-                d = atoi( strtok(NULL, " ") );
+                p = atof( strtok(NULL, " ") );
+                i = atof( strtok(NULL, " ") );
+                d = atof( strtok(NULL, " ") );
                 switch(changePID){
                     case 0:
                         A.set_PID(p, i, d);
@@ -63,13 +68,13 @@ void Car::Serial_r(String str){
                 }
                 control_type = past_control_type;
             default:
-                control_type = -2;
+                control_type = -3;
                 reset();
         }
         past_control_type = control_type;
     }
     else{
-        past_control_type = control_type = -2;
+        past_control_type = control_type = -3;
         car_stop();
     }
 }
@@ -84,13 +89,13 @@ void Car::printInfo(){
     Serial.print(Y);
     Serial.print(" ");
     Serial.print(theta);
-    Serial.print(" ");
+    Serial.print(" / ");
     Serial.print(Vx);
     Serial.print(" ");
     Serial.print(Vy);
     Serial.print(" ");
     Serial.print(w);
-    Serial.print(" ");
+    Serial.print(" / ");
     Serial.print(A.v);
     Serial.print(" ");
     Serial.print(B.v);
@@ -98,7 +103,7 @@ void Car::printInfo(){
     Serial.print(C.v);
     Serial.print(" ");
     Serial.print(D.v);
-    Serial.print(" ");
+    Serial.print(" / ");
     Serial.print(A.encoder);
     Serial.print(" ");
     Serial.print(B.encoder);
@@ -192,7 +197,22 @@ void Car::Car_Control(){
         analogWrite(MotorB1, B.pwm > MAX_PWM ? MAX_PWM : B.pwm);
         analogWrite(MotorB2, 0); //MotorB2置0时电机正转
     }
-    
+//    if(C.pwm < 0) { //反转
+//        analogWrite(MotorC1, 0); //MotorB1置0时电机反转
+//        analogWrite(MotorC2, (-C.pwm) > MAX_PWM ? MAX_PWM : (-C.pwm));
+//    }
+//    else { //正转
+//        analogWrite(MotorC1, C.pwm > MAX_PWM ? MAX_PWM : C.pwm);
+//        analogWrite(MotorC2, 0); //MotorB2置0时电机正转
+//    }
+//    if(D.pwm < 0) { //反转
+//        analogWrite(MotorD1, 0); //MotorB1置0时电机反转
+//        analogWrite(MotorD2, (-D.pwm) > MAX_PWM ? MAX_PWM : (-D.pwm));
+//    }
+//    else { //正转
+//        analogWrite(MotorD1, D.pwm > MAX_PWM ? MAX_PWM : D.pwm);
+//        analogWrite(MotorD2, 0); //MotorB2置0时电机正转
+//    }
     const int half_pwm = 128; 
     analogWrite(MotorC2, half_pwm); //MotorC1置0时电机反转
     if(C.pwm < 0) { //反转
@@ -204,11 +224,11 @@ void Car::Car_Control(){
 
     if(D.pwm < 0) { //反转
         analogWrite(MotorD1, (half_pwm- ( (-D.pwm) > MAX_PWM ? MAX_PWM : (-D.pwm)) ) );
-        analogWrite(MotorD2, (half_pwm- ( (-D.pwm) > MAX_PWM ? MAX_PWM : (-D.pwm)) ) );
+        analogWrite(MotorD2, 0 );
 
     }
     else { //正转
         analogWrite(MotorD1, D.pwm>MAX_PWM ? (MAX_PWM + half_pwm) : (D.pwm + half_pwm ));
-        analogWrite(MotorD2, D.pwm>MAX_PWM ? (MAX_PWM + half_pwm) : (D.pwm + half_pwm ));
+        analogWrite(MotorD2, 255);
     }
 }

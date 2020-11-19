@@ -8,7 +8,7 @@ void Serial_rw(){
             switch (msg_type){
                 case 0:
                     arm.workType = 112;
-                    car.control_type = -2;
+                    car.control_type = -3;
                     car.reset();
                     slide.reset();
                 case 1: //Control pose
@@ -25,7 +25,7 @@ void Serial_rw(){
                     break;
                 default:
                     arm.workType = 112;
-                    car.control_type = -2;
+                    car.control_type = -3;
                     car.reset();
                     slide.reset();
                     break;
@@ -46,13 +46,15 @@ void printInfo(){
         Serial.print(" ");
         Serial.print(car.theta);
         Serial.print(" ");
-        Serial.print(arm.y);
+        Serial.print(arm.Y);
         Serial.print(" ");
-        Serial.print(arm.z);
+        Serial.print(arm.Z);
         Serial.print(" ");
-        Serial.print(is_motion_finish());
+        Serial.print(arm.is_motion_finish());
         Serial.print(" ");
         Serial.print(slide.encoder);
+        Serial.print(" ");
+        Serial.print(slide.desire_encode);
         Serial.print(" ");
         Serial.print("\n");
         
