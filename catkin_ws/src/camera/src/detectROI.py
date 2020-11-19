@@ -42,8 +42,8 @@ def getBlue(img):
 	upper_bound_0 = np.array([140,255,255])
 	hsv_img   = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 	mask = cv2.inRange(hsv_img, lower_bound_0, upper_bound_0)
-	cv2.imshow('blue', mask)
-	cv2.waitKey(1)
+	# cv2.imshow('blue', mask)
+	# cv2.waitKey(1)
 
 	return mask
 
@@ -52,8 +52,8 @@ def getBlue_box(img):
 	upper_bound_0 = np.array([160,255,255])
 	hsv_img   = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 	mask = cv2.inRange(hsv_img, lower_bound_0, upper_bound_0)
-	cv2.imshow('blue1', mask)
-	cv2.waitKey(1)
+	# cv2.imshow('blue1', mask)
+	# cv2.waitKey(1)
 
 	return mask
 

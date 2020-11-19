@@ -53,7 +53,7 @@ class Master(object):
         self.detect_bounding_list = [[100, 100, 0, 100], [0, 0, 0, 0], [0, 0, 0, 0]]
         self.object_color = "Nothing"
         self.object_coord = np.array([-1, -1, -1])
-        self.tolerance_camera = 3 #(mm)
+        self.tolerance_camera = 10 #(mm)
         
 
         #Move variable
@@ -66,10 +66,16 @@ class Master(object):
         self.tolerance_move = 0.5
         self.cmd = String()
         self.maps = []
+        '''
         self.map1 = [['x','-10','y','50'],
-                    ['x','-70','y','110'],
+                    ['x','-60','y','120'],
+                    ['x','-10','y','200'],
+                    ['x','-60','y','340']]
+        '''
+        self.map1 = [['x','-10','y','30'],
+                    ['x','-60','y','105'],
                     ['x','-10','y','180'],
-                    ['x','-70','y','340']]
+                    ['x','-60','y','340']]
         
         self.map2=[['x','-5','y','70'],
                   ['x','-2.5','y','150.5'],
@@ -126,6 +132,7 @@ class Master(object):
                 print("wait too long")
                 break
             pass
+        sleep(0.5)
         # print('Out move while !')
 
     def Move2PosX(self,data):
@@ -158,6 +165,7 @@ class Master(object):
     def publishArm(self, action, y, z):
         self.cmd.data = action + ' ' + str(y) + ' '  + str(z)
         self.pub_arm_msg.publish(self.cmd)
+        sleep(1)
     
     def GetPosArm_callback(self, data):
         self.armY = data.x
@@ -166,9 +174,9 @@ class Master(object):
 
     #Combine
     def check_modify(self, target_color, move_count):
+
         #subscribe color and coordination
         self.master_info.stage = self.stage_index
-        self.master_info.open_flag = 1
         self.master_info.bounding = self.detect_bounding_list[self.stage_index]
         self.master_info.color = self.color_list[self.stage_index]
         self.pub_master_info_msg.publish(self.master_info)
@@ -178,7 +186,7 @@ class Master(object):
         print(self.object_color)
         if ((self.object_color != target_color[0]) and (self.object_color != target_color[1])):
             if self.stage_index == 0:
-                self.Move2Pos_related(0, 20)
+                self.Move2Pos_related(0, 40)
 
             print('Skip')
             return False, 0, 0
@@ -192,7 +200,6 @@ class Master(object):
                 break
             print('move: '+str((self.object_coord[0] - target_coord[0])/10))
             self.Move2Pos_related((self.object_coord[0] - target_coord[0])/10, 0)
-            sleep(1)
         
             #if ((abs(target_coord[0] - object_coord[0]) > self.tolerance_camera)) or ((abs(target_coord[1] - object_coord[1]) > self.tolerance_camera)):
         # print('Object pos : ', self.object_coord[0], self.object_coord[1])
@@ -201,13 +208,11 @@ class Master(object):
         # sleep(3)
         object_coord = self.object_coord.copy()
         if self.stage_index == 0 :
-            self.Move2Pos_related(0, (object_coord[1] - target_coord[1])/10 + self.arm_dest_y - self.armY - 10)
+            self.Move2Pos_related(0, object_coord[1]/10 - self.armY - 10)
         else : 
+            print(object_coord[1], target_coord[1])
             self.Move2Pos_related(0, (object_coord[1] - target_coord[1])/10)
-        sleep(1)
-        
-        self.master_info.open_flag = 0
-        self.pub_master_info_msg.publish(self.master_info)
+                
         print('modify finished', object_coord[1])
 
         self.object_color = "Nothing"
@@ -216,16 +221,14 @@ class Master(object):
         if self.stage_index == 0:
             return True, (target_coord[1])/10, object_coord[2]/10
         elif (self.stage_index == 1) and (move_count%2) == 0:
-            return True, (target_coord[1]+1.5)/10, object_coord[2]/10
+            return True, (target_coord[1]+15)/10, object_coord[2]/10
         elif (self.stage_index == 1) and (move_count%2) == 1:
-            return True, (target_coord[1]+7.5)/10, object_coord[2]/10
+            return True, (target_coord[1]+75)/10, object_coord[2]/10
         elif self.stage_index == 2:
-            return True, (target_coord[1]+2)/10, object_coord[2]/10
+            return True, (target_coord[1]+20)/10, object_coord[2]/10
 
     def stage(self, index):
         finish_flag = False
-        self.master_info.open_flag = 0
-        self.pub_master_info_msg.publish(self.master_info)
         self.stage_index = index
         move_number = len(self.maps[self.stage_index])
         arm_action_number = len(self.arm_action_list[self.stage_index])
@@ -242,7 +245,7 @@ class Master(object):
             if movement == 'Move':
                 print('Move task : '+  str(move_count))
                 self.Move2PosS13(self.stage_index,move_count)
-                sleep(2)
+
                 if move_count < move_number-1:
                     movement = 'CheckAndModify' if ((self.stage_index != 1) or (move_count % 2 == 0)) else 'MoveArm'
                     move_count += 1
@@ -252,15 +255,8 @@ class Master(object):
             elif movement == 'CheckAndModify':
                 action_flag, self.arm_dest_y, self.arm_dest_z= self.check_modify(self.target_color_list[self.stage_index], move_count)                
                 print('Do action or not : ' + str(action_flag))
-                
-                master.cmd.data = raw_input('INPUT (\'q\' to quit):')
-
+                #master.cmd.data = raw_input('INPUT (\'q\' to quit):')
                 movement  = 'MoveArm' if action_flag else 'Move'
-
-                if (action_flag) and (self.stage_index == 0):
-                    print(0, self.arm_dest_y - self.armY - 10)
-                    self.Move2Pos_related(0, self.arm_dest_y - self.armY - 10)
-                    master.cmd.data = raw_input('INPUT (\'q\' to quit):')
 
             elif movement == 'MoveArm':
                 arm_action = self.arm_action_list[self.stage_index][arm_count % arm_action_number]
@@ -268,11 +264,10 @@ class Master(object):
                     self.arm_dest_y = 20
                     self.arm_dest_z = 20
                 elif arm_action == 'Pick':
-                    self.arm_dest_y += 2.5
+                    self.arm_dest_y += 1
                 print(arm_action + ' ' + str(self.arm_dest_y) + ' ' + str(self.arm_dest_z))
                 # if(self.arm_dest_y > self.armY):
                 self.publishArm(arm_action, self.arm_dest_y, self.arm_dest_z)
-                sleep(0.5)
                 while(not(self.armflag)):
                     pass
                 # self.Move2Pos_related(0,self.arm_dest_y-self.armY)
@@ -314,7 +309,7 @@ if __name__ == '__main__':
     master = Master()
     sleep(0.5)
 
-    master.stage(0)
+    master.stage(1)
     # master.test(0)
 
     master.stop()

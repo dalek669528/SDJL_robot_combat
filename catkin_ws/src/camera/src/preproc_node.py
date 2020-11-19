@@ -76,10 +76,14 @@ class Preprocess(object):
         msg_rgb_frame = CvBridge().cv2_to_imgmsg(rgb_image)
         self.DetectImage.publish(msg_rgb_frame)
         self.yolo_detect_finish_flag = False
-
+        t = time.time()
         while self.yolo_detect_finish_flag == False:
             time.sleep(0.1)
-        print(self.roi_info, self.roi_info.shape)
+            if((time.time()-t)>3):
+            	print('wait too long')
+            	break
+
+        print(self.roi_info)
         detected_image = rgb_image.copy()
         color_count = np.array([0,0,0])
         if len(self.roi_info) == 1 : 
@@ -138,7 +142,7 @@ class Preprocess(object):
         # depth_image_array = crop_depth(roi_array, removeBG_depth)
         depth_image_array = crop_depth(roi_array, depth_image)
         coordination = calculate_coordinate(depth_image_array)
-
+        print(coordination)
         # self.pos_x = 0
         bound_filter = ((coordination > (self.left_bound - self.pos_x)) & (coordination < (self.right_bound - self.pos_x)))[:,0]
         # print(coordination)
@@ -295,7 +299,7 @@ class Preprocess(object):
         rgb_image[:, rgb_image.shape[1]-self.detect_bounding_x2:rgb_image.shape[1]] = [0, 0, 0]
         rgb_image[0:self.detect_bounding_y1, :] = [0, 0, 0]
         rgb_image[rgb_image.shape[0]-self.detect_bounding_y2:rgb_image.shape[0], :] = [0, 0, 0]
-        self.stage_index = 0
+        # self.stage_index = 0
         if self.stage_index == 0:
             self.StageOne(rgb_image, depth_image) # return the coordination and the color of the largest object
         elif self.stage_index == 1:
@@ -307,7 +311,7 @@ class Preprocess(object):
 
     def Detect_callback(self, data):
         self.roi_info = np.array(data.data)
-        print(self.roi_info)
+        #print(self.roi_info)
         self.yolo_detect_finish_flag = True
 
     def Depth_callback(self, data):
