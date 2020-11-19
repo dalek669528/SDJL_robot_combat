@@ -35,8 +35,8 @@ class Master(object):
 
         self.stage_index = 0
         #Arm variable
-        self.arm_dist_y = 0
-        self.arm_dist_z = 0
+        self.arm_dest_y = 0
+        self.arm_dest_z = 0
         self.arm_action_list =  [['Stamp'],
                                 ['Pick','Place'],
                                 ['Push']]
@@ -48,7 +48,7 @@ class Master(object):
         self.master_info = Master_info()
         self.target_color_list = [['red', 'green'], ['green', 'blue'], ['green']]
         self.target_offset_list = [1, 1.5, 7.5, 2]
-        self.target_coord_list = [[0, 300], [0, 165], [0, 100]]
+        self.target_coord_list = [[-35, 300], [0, 165], [0, 100]]
         self.color_list = [[1, 1, 0], [0, 1, 1], [0, 1, 0]]
         self.detect_bounding_list = [[100, 100, 0, 100], [0, 0, 0, 0], [0, 0, 0, 0]]
         self.object_color = "Nothing"
@@ -67,8 +67,8 @@ class Master(object):
         self.cmd = String()
         self.maps = []
         self.map1 = [['x','-10','y','50'],
-                    ['x','-70','y','125'],
-                    ['x','-10','y','200'],
+                    ['x','-70','y','110'],
+                    ['x','-10','y','180'],
                     ['x','-70','y','340']]
         
         self.map2=[['x','-5','y','70'],
@@ -148,6 +148,7 @@ class Master(object):
                 self.Move2PosY(float(self.maps[stage_index][move_index][i+1]))
             else:
                 self.Move2PosX(float(self.maps[stage_index][move_index][i+1]))
+            sleep(0.5)
     
     def stop(self):
         self.cmd.data = "0 "
@@ -199,20 +200,27 @@ class Master(object):
         # self.Move2Pos_related((self.object_coord[0] - target_coord[0])/10, 0)
         # sleep(3)
         object_coord = self.object_coord.copy()
-        self.Move2Pos_related(0, (object_coord[1] - target_coord[1])/10)
+        if self.stage_index == 0 :
+            self.Move2Pos_related(0, (object_coord[1] - target_coord[1])/10 + self.arm_dest_y - self.armY - 10)
+        else : 
+            self.Move2Pos_related(0, (object_coord[1] - target_coord[1])/10)
         sleep(1)
         
         self.master_info.open_flag = 0
         self.pub_master_info_msg.publish(self.master_info)
         print('modify finished', object_coord[1])
+
+        self.object_color = "Nothing"
+        self.object_coord = np.array([-1, -1, -1])
+
         if self.stage_index == 0:
             return True, (target_coord[1])/10, object_coord[2]/10
         elif (self.stage_index == 1) and (move_count%2) == 0:
-            return True, (target_coord[1]+1.5)/10, self.object_coord[2]/10
+            return True, (target_coord[1]+1.5)/10, object_coord[2]/10
         elif (self.stage_index == 1) and (move_count%2) == 1:
-            return True, (target_coord[1]+7.5)/10, self.object_coord[2]/10
+            return True, (target_coord[1]+7.5)/10, object_coord[2]/10
         elif self.stage_index == 2:
-            return True, (target_coord[1]+2)/10, self.object_coord[2]/10
+            return True, (target_coord[1]+2)/10, object_coord[2]/10
 
     def stage(self, index):
         finish_flag = False
@@ -223,7 +231,7 @@ class Master(object):
         arm_action_number = len(self.arm_action_list[self.stage_index])
         print('\n\nGet in Stage ' + str(self.stage_index) + ',  move_munber : ' + str(move_number) + ' arm_action_number : ' + str(arm_action_number))
         if self.stage_index == 0:
-        	self.publishArm('Stamp', 20, 18)
+            self.publishArm('Stamp', 20, 19)
 
         # self.pub_master_info_msg.publish(self.stage_index) # publish current stage to preproc_node.py to change between rgb/BGremoved_rgb
         move_count = 0
@@ -242,27 +250,32 @@ class Master(object):
                     finish_flag = True    
                 
             elif movement == 'CheckAndModify':
-                action_flag, self.arm_dist_y, self.arm_dist_z= self.check_modify(self.target_color_list[self.stage_index], move_count)                
+                action_flag, self.arm_dest_y, self.arm_dest_z= self.check_modify(self.target_color_list[self.stage_index], move_count)                
                 print('Do action or not : ' + str(action_flag))
+                
+                master.cmd.data = raw_input('INPUT (\'q\' to quit):')
+
                 movement  = 'MoveArm' if action_flag else 'Move'
 
-            	if (action_flag) and (self.stage_index == 0):
-            		 self.Move2Pos_related(0, self.arm_dist_y - self.armY - 10)
+                if (action_flag) and (self.stage_index == 0):
+                    print(0, self.arm_dest_y - self.armY - 10)
+                    self.Move2Pos_related(0, self.arm_dest_y - self.armY - 10)
+                    master.cmd.data = raw_input('INPUT (\'q\' to quit):')
 
             elif movement == 'MoveArm':
                 arm_action = self.arm_action_list[self.stage_index][arm_count % arm_action_number]
                 if arm_action == 'Place':
-                    self.arm_dist_y = 20
-                    self.arm_dist_z = 20
+                    self.arm_dest_y = 20
+                    self.arm_dest_z = 20
                 elif arm_action == 'Pick':
-                	self.arm_dist_y += 2.5
-                print(arm_action + ' ' + str(self.arm_dist_y) + ' ' + str(self.arm_dist_z))
-                # if(self.arm_dist_y > self.armY):
-                self.publishArm(arm_action, self.arm_dist_y, self.arm_dist_z)
+                    self.arm_dest_y += 2.5
+                print(arm_action + ' ' + str(self.arm_dest_y) + ' ' + str(self.arm_dest_z))
+                # if(self.arm_dest_y > self.armY):
+                self.publishArm(arm_action, self.arm_dest_y, self.arm_dest_z)
                 sleep(0.5)
                 while(not(self.armflag)):
                     pass
-                # self.Move2Pos_related(0,self.arm_dist_y-self.armY)
+                # self.Move2Pos_related(0,self.arm_dest_y-self.armY)
                 movement = 'Move'
                 arm_count += 1
         self.master_info.open_flag = 0
@@ -301,8 +314,7 @@ if __name__ == '__main__':
     master = Master()
     sleep(0.5)
 
-    #master.stage(0)
-    master.stage(1)
+    master.stage(0)
     # master.test(0)
 
     master.stop()

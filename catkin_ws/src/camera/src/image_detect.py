@@ -17,16 +17,19 @@ class Detector(object):
         self.yolo = YOLO()
         image = Img.open('/home/dick/SDJL_robot_combat/catkin_ws/src/camera/src/init.png')
         r_image = self.yolo.detect_image(image)
+        #self.image_array = np.zeros((360, 640, 3))
+        #self.is_yolo_ready = True
 
         # Publications
         self.DetectResult = rospy.Publisher('DetectResult', Float32MultiArray, queue_size=1)
         # Subscriptions
         self.DetectImage = rospy.Subscriber('DetectImage', Image, self.DetectImage_callback, queue_size=1)
-        #self.DetectImage = rospy.Subscriber('RawRGB', Image, self.DetectImage_callback, queue_size=1)
-    
-        #self.detect_img()
+        sleep(1)
+        self.DetectResult.publish(Float32MultiArray(data=np.array([0.0])))
    
+
     def DetectImage_callback(self, data):
+        
         array = np.frombuffer(data.data, dtype=np.uint8).reshape(data.height, data.width, -1)
         image_array = array.copy()
         image_array[:, :, 0] = array[:, :, 2]
@@ -41,15 +44,9 @@ class Detector(object):
         #r_image.show()
         ros_roi_array = Float32MultiArray(data=roi_info_array)
         self.DetectResult.publish(ros_roi_array)
-    
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     rospy.init_node("ImageDetector", anonymous=False)
     detector = Detector()
+    rospy.spin()
     
-    try:
-        rospy.spin()
-    except KeyboardInterrupt:
-        detector.yolo.close_session()
-        print("Shutting Down...")
-

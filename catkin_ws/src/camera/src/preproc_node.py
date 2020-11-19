@@ -121,11 +121,13 @@ class Preprocess(object):
         meter = 1
         
         detected_image, roi_array, color_count = self.Yolo(rgb_image)
+        self.ResultImage.publish(CvBridge().cv2_to_imgmsg(detected_image))
+
         #detected_image, roi_array, color_count = detect_color(rgb_image, 0.3)
         #detected_image, roi_array, color_count = detect_color(removeBG_rgb, 0.3)
-        removeBG_rgb = self.get_filted_image(meter, rgb_image, depth_image, 'rgb')
-        # cv2.imshow('Stage1', detected_image)
-        # cv2.waitKey(1)
+        # removeBG_rgb = self.get_filted_image(meter, rgb_image, depth_image, 'rgb')
+        cv2.imshow('Stage1', detected_image)
+        cv2.waitKey(1)
         if roi_array.shape[0] == 0: # Nothing detected
             print('First stage: Nothing detected.')
             coord_msg.data = [0, -1, 0]
@@ -174,10 +176,10 @@ class Preprocess(object):
         meter = 0.5
         removeBG_rgb = self.get_filted_image(meter, rgb_image, depth_image, 'rgb')
         removeBG_depth = self.get_filted_image(meter, rgb_image, depth_image, 'depth')
-        detected_image, roi_array, color_count = detect_color(removeBG_rgb, 0.3, red = False)
-        # cv2.imshow('filted rgb', removeBG_rgb)
-        #cv2.imshow('Stage2', detected_image)
-        #cv2.waitKey(1)
+        detected_image, roi_array, color_count = detect_color(1, removeBG_rgb, 0.3, red = False)
+        #cv2.imshow('filted rgb', removeBG_rgb)
+        cv2.imshow('Stage2', detected_image)
+        cv2.waitKey(1)
         self.ResultImage.publish(CvBridge().cv2_to_imgmsg(detected_image))
         if roi_array.shape[0] == 0: # Nothing detected
             print('Second stage: Nothing detected.')
@@ -186,25 +188,35 @@ class Preprocess(object):
             self.Coord.publish(coord_msg)
             return 0
         #remember to filt if green or blue are not detected!!!
-        if (color_count[1] > 0):
-            target_array = roi_array[color_count[0]:color_count[0]+color_count[1], :]
-            target_color_string = 'green'
-        elif (color_count[2] > 0):
-            target_array = roi_array[color_count[0]+color_count[1]:sum(color_count), :]
-            target_color_string = 'blue'
-        else:
-            return 0
+        
+        # self.pos_x = 0
+        depth_img_array = crop_depth(roi_array, depth_image)
+        coordination = calculate_coordinate(depth_img_array)
+        bound_filter = ((coordination > (self.left_bound - self.pos_x)) & (coordination < (self.right_bound - self.pos_x)))[:,0]
+        roi_array[np.logical_not(bound_filter), 0] = roi_array[np.logical_not(bound_filter), 2]
+        # print(coordination)
+        # print(bound_filter)
+        # print(depth_img_array)
+       
+        for index, value in enumerate(roi_array):
+        	if value[0] == value[2]:
+        		depth_img_array[index, 2] = 10000
+        index = np.argmin(depth_img_array[:, 2])
+        # print(index)
 
-        depth_img_array = crop_depth(target_array, removeBG_depth)
-        sorted_index = np.argsort(depth_img_array[:, 2])
-        closest = depth_img_array[sorted_index[0], :].reshape([1, 3])
-        coordination = calculate_coordinate(closest)
+        coordination = coordination[index, :]
+        # sorted_index = np.argsort(depth_img_array[:, 2])
+        # closest = depth_img_array[sorted_index[0], :].reshape([1, 3])
+        # coordination = calculate_coordinate(closest)
         print(coordination)
+
+
+
 
         #publish
         coord_msg = Coordination()
         coord_msg.data = coordination.flatten().tolist()
-        coord_msg.color = target_color_string
+        coord_msg.color = 'green'
         self.Coord.publish(coord_msg)
 
     def StageThree(self, rgb_image, depth_image):
@@ -214,15 +226,27 @@ class Preprocess(object):
         removeBG_depth = self.get_filted_image(meter, rgb_image, depth_image, 'depth')
         # if self.stage_index == 30:
 
-        detected_image, roi_array, color_count = detect_color(removeBG_rgb, 0.3, red = False, blue=False)
-        cv2.imshow('Stage3', detected_image)
-        cv2.waitKey(1)
+        detected_image, roi_array, color_count = detect_color(2, removeBG_rgb, 0.3, red = False, blue=False)
+        self.ResultImage.publish(CvBridge().cv2_to_imgmsg(detected_image))
+        #cv2.imshow('Stage3', detected_image)
+        #cv2.waitKey(1)
         if color_count[1] == 0: # Green 'E' is not detected
             print('Third stage: Nothing detected.')
             coord_msg.data = [0, -1, 0]
             coord_msg.color = 'Nothing'
             self.Coord.publish(coord_msg)
             return 0
+        
+        # depth_image_array = crop_depth(roi_array, removeBG_depth)
+        depth_image_array = crop_depth(roi_array, depth_image)
+        coordination = calculate_coordinate(depth_image_array)
+
+        # self.pos_x = 0
+        bound_filter = ((coordination > (self.left_bound - self.pos_x)) & (coordination < (self.right_bound - self.pos_x)))[:,0]
+        print(coordination)
+        print('bound filter : ', bound_filter) 
+        roi_array[np.logical_not(bound_filter), 0] = roi_array[np.logical_not(bound_filter), 2]
+        
         green_array = roi_array[color_count[0]:color_count[0]+color_count[1]:, :]
         x1 = green_array[:, 0]
         y1 = green_array[:, 1]
@@ -233,10 +257,9 @@ class Preprocess(object):
         area = w * h
         max_index = np.argmax(area)
         max_roi = green_array[max_index, :].reshape([1, 4])
-        depth_img_array = crop_depth(max_roi, removeBG_depth)
-        coordination = calculate_coordinate(depth_img_array)
-        #print(coordination)
-
+        coordination = coordination[max_index]
+        print(coordination)
+        print(max_index)
         #publish
         coord_msg = Coordination()
         coord_msg.data = coordination.flatten().tolist()

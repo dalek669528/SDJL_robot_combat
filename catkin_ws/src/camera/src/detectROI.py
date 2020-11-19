@@ -42,8 +42,19 @@ def getBlue(img):
 	upper_bound_0 = np.array([140,255,255])
 	hsv_img   = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 	mask = cv2.inRange(hsv_img, lower_bound_0, upper_bound_0)
-	# cv2.imshow('blue', img[:, :, 0])
-	# cv2.waitKey(1)
+	cv2.imshow('blue', mask)
+	cv2.waitKey(1)
+
+	return mask
+
+def getBlue_box(img):
+	lower_bound_0 = np.array([70,60,20]) 
+	upper_bound_0 = np.array([160,255,255])
+	hsv_img   = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+	mask = cv2.inRange(hsv_img, lower_bound_0, upper_bound_0)
+	cv2.imshow('blue1', mask)
+	cv2.waitKey(1)
+
 	return mask
 
 def getBlue_rgb(img):
@@ -87,7 +98,7 @@ def process_contours(color_string, contours, threshold, canvas, roi_list):
 
 	return canvas, roi_list, count
 
-def detect_color(img, threshold, red=True, green=True, blue=True):
+def detect_color(stage, img, threshold, red=True, green=True, blue=True):
 	canvas = img.copy()
 	red_count = 0
 	green_count = 0
@@ -111,7 +122,10 @@ def detect_color(img, threshold, red=True, green=True, blue=True):
 		contours_green, _ = cv2.findContours(green_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 		canvas, roi_list, green_count = process_contours('Green', contours_green, threshold, canvas, roi_list)
 	if blue:
-		blue_mask = getBlue(canvas)
+		if stage == 1:
+			blue_mask = getBlue_box(canvas)
+		else:
+			blue_mask = getBlue(canvas)
 		contours_blue, _ = cv2.findContours(blue_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 		canvas, roi_list, blue_count = process_contours('Blue', contours_blue, threshold, canvas, roi_list)
 
