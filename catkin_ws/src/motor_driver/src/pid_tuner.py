@@ -33,7 +33,7 @@ class PID_Turner(object):
         self.cmd = ""
         self.readed = True
 
-        self.PID[] = [[1, 0.5, 2], [1, 0.5, 2], [1, 0.5, 2], [1, 0.5, 2], [1, 0, 4]]
+        self.PID = [[1, 0.5, 2], [1, 0.5, 2], [1, 0.5, 2], [1, 0.5, 2], [1, 0, 4]]
         
         self.start_timer = 0
         self.timer = 0
@@ -158,9 +158,9 @@ class PID_Turner(object):
             if(not readed):
                 readed = true
                 cmd_arr = self.cmd.split(' ')
-                if(self.cmd_arr[0] == "q")
+                if(self.cmd_arr[0] == "q"):
                     break;
-                elif(self.cmd_arr[0].isdigit())
+                elif(self.cmd_arr[0].isdigit()):
                     w = int(cmd_arr[0])
                     if(w >= 0 and w <= 4 ):
                         cmd = "1 -1 " + cmd_arr[0] + " "  + cmd_arr[1] + " " + cmd_arr[2] + " " + cmd_arr[3] + "\n"

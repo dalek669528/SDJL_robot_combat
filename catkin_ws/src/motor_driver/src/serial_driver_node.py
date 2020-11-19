@@ -37,7 +37,7 @@ class Serial_driver(object):
         self.ang_is_moving = False;
 
         self.slide_encoder = Int32();
-        self.encoder_gain = 200
+        self.encoder_gain = 20
 
         # Publications
         self.pub_car_pos = rospy.Publisher("car_pose", Pose2D, queue_size=1)
@@ -92,11 +92,12 @@ class Serial_driver(object):
             self.ang_is_moving = True
             ratio = 0
             direct = 0
-            if(joy_msg.axes[2] != 1):
+            if(joy_msg.axes[2] < 0):
                 ratio = (joy_msg.axes[2] - 1) * -0.5
                 direct = 1
-            if(joy_msg.axes[5] != 1):
+            if(joy_msg.axes[5] < 1):
                 ratio = (joy_msg.axes[5] - 1) * -0.5
+                direct = 0
             cmd = "2 122 " + str(self.servo_ptr) + " " + str(ratio) + " " + str(direct) +  "\n"
             # print(cmd)
             self.ser.write(cmd)

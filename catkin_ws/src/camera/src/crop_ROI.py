@@ -20,11 +20,17 @@ def crop_depth(points, depth):
 
         temp = depth[p[1]:p[3]+1, p[0]:p[2]+1].copy()
         exist = (temp != 0)
-        num = temp.sum()
+        #num = temp.sum()
         den = exist.sum()
+        #np.set_printoptions(threshold=np.nan)
+        #print(temp)
+        sort_array = np.sort(temp.flatten())
+        caculate_array = sort_array[np.sum(sort_array==0) : np.sum(sort_array==0)+100]
         
+
         if den > 0:
-            output[i][2] = int(num/den)
+            #output[i][2] = int(num/den)
+            output[i][2] = caculate_array.mean()
         else:
             output[i][2] = 0
             
