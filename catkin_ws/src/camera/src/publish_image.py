@@ -70,7 +70,7 @@ class Camera(object):
         color_image = np.asanyarray(color_frame.get_data())
         flipped_rgb = cv2.flip(color_image, -1)
         flipped_depth = cv2.flip(depth_image, -1)
-        
+
         # output.write(flipped_rgb)
         # # record the video(by save image)
         # cv2.imwrite(path + folder + str(frame_index) + '.png', flipped_rgb)
@@ -84,6 +84,10 @@ class Camera(object):
 
         self.CameraRgbImage.publish(msg_rgb_frame)
         self.CameraDepthImage.publish(msg_depth_frame)
+
+        #removeBG_rgb = self.get_filted_image(0.5, flipped_rgb, flipped_depth, 'rgb')
+        #cv2.imshow('removeBG_rgb', removeBG_rgb)
+        #cv2.waitKey(1)
         print('RGB seq: %d' % (msg_rgb_frame.header.seq))
         print('Depth seq: %d' % (msg_depth_frame.header.seq))
         
@@ -92,6 +96,24 @@ class Camera(object):
         time.sleep(1)
         print("Shutting Down...")
     # output.release()
+
+  def get_filted_image(self, meter, rgb_image, depth_image, image_type): # get distance-filted image type:rgb, depth
+    clipping_distance = meter / 0.0010000000474974513
+    grey_color = 0
+    if image_type == 'rgb': # rgb image
+        depth = np.dstack((depth_image, depth_image, depth_image))
+        image = rgb_image.copy()
+    elif image_type == 'depth': # depth image
+        depth = depth_image.copy()
+        image = depth_image.copy()
+    filted_image = np.where(
+            (depth > clipping_distance) | (depth <= 0),
+            grey_color,
+            image,
+        )
+    return filted_image
+
+
 
 if __name__ == '__main__':
   rospy.init_node("CameraImagePublisher", anonymous=False)

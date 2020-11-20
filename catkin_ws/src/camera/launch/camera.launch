@@ -1,5 +1,5 @@
 <launch>
-    <node pkg="camera" type="publish_image.py" name="CameraImagePublisher" output="screen">
+    <node pkg="camera" type="publish_image.py" name="CameraImagePublisher" >
     </node> 
     <!-- Subscribe Topics -->
     <!-- -->
