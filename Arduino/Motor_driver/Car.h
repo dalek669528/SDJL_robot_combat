@@ -83,7 +83,7 @@ public:
     float pos_err[3] = {0, 0, 0};
     float pos_err_sum[3] = {0, 0, 0};
     float pos_err_past[3] = {0, 0, 0};
-    float p_Kp = 8, p_Ki = 0.1, p_Kd = 10; 
+    float p_Kp = 5, p_Ki = 0, p_Kd = 5; 
 
     int control_type = 0, past_control_type = 0;
 

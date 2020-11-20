@@ -28,8 +28,8 @@ void Slide::PWM_Calculate(){
         desire_encode = (desire_encode <= MIN_ENCODER) ? MIN_ENCODER : desire_encode;
 
         err = desire_encode - encoder;
-        err = (err >=  5) ?  5 : err;
-        err = (err <= -5) ? -5 : err;
+        err = (err >=  20) ?  20 : err;
+        err = (err <= -20) ? -20 : err;
         err_sum += err;
         if(err > 0)
             pwm = Kp * err + Ki * err_sum + Kd * (err - err_past);

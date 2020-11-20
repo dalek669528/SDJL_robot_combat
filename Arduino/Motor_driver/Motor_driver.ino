@@ -15,7 +15,7 @@ int print_type = 0;
 void setup(){
     Pin_init();
     arm.init();
-    slide.set_PID(6, 0.03, 5, 15, 0.5, 15);
+    slide.set_PID(10, 0.03, 10, 15, 0.8, 15);
     timer = millis();
     Serial.begin(115200);
     while (!Serial) {}    // wait for serial port to connect.

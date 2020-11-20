@@ -59,7 +59,7 @@ class servo_struct {
 
 class Arm{
     public:
-        bool is_fantasy = false;
+        bool is_fantasy = false, is_goaway = false;
         servo_struct servo[4];
         const float SERVO_SPEED_INIT = 30;
         float SERVO_SPEED;
@@ -83,6 +83,7 @@ class Arm{
         bool moveServoGroup(int order, float desireAngle_array[]);
         bool Move_series(int motion_size, uint32_t period = 250);
         bool fantasyBaby();
+        bool goaway();
         
         void reset_motion(){
             for(int i =0 ; i < 32 ; i++){
@@ -108,9 +109,9 @@ class Arm{
         
         
         //Servo const variable
-        const int SERVO_POSITIVE[4]       = {-1,    1,  1,  1};
-        const int SERVO_OFFSET[4]         = {184,   90, 90, 0};
-        const int SERVO_LOWER_BOUND[4]    = {30,    0,  0,  00};
+        const int SERVO_POSITIVE[4]       = { -1,   1,   1, 1};
+        const int SERVO_OFFSET[4]         = {184, 150, 150, 0};
+        const int SERVO_LOWER_BOUND[4]    = { 30,   0,  0,  0};
         const int SERVO_UPPER_BOUND[4]    = {184, 180, 180, 90};
         
         //const uint8_t SERVO_INIT_STATE[4]    = {180, 180, 180,    90};

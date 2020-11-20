@@ -31,7 +31,8 @@ class PID_Turner(object):
         self.v_gain = 25
 
         self.cmd = ""
-        self.readed = True
+        self.is_readed = False
+        self.stage = -1
 
         self.PID[] = [[1, 0.5, 2], [1, 0.5, 2], [1, 0.5, 2], [1, 0.5, 2], [1, 0, 4]]
         
@@ -47,10 +48,6 @@ class PID_Turner(object):
         self.Vb = 0
         self.Vc = 0
         self.Vd = 0
-        self.Ena = 0
-        self.Enb = 0
-        self.Enc = 0
-        self.End = 0
 
         self.v_err = [0, 0, 0, 0]
         self.pos_err = 0
@@ -155,8 +152,8 @@ class PID_Turner(object):
                 self.Enb = arr[16]
                 self.Enc = arr[17]
                 self.End = arr[18]
-            if(not readed):
-                readed = true
+            if(not is_readed):
+                is_readed = True
                 cmd_arr = self.cmd.split(' ')
                 if(self.cmd_arr[0] == "q")
                     break;
@@ -175,13 +172,12 @@ class PID_Turner(object):
                         cmd = "1 -1 3 "  + cmd_arr[1] + " " + cmd_arr[2] + " " + cmd_arr[3] + "\n"
                         self.ser.write(cmd)
                 elif(self.cmd_arr[0] == "s"):
-
-
-                    
+                    self.is_start = True
                     self.start_timer = self.timer
+            if(self.is_start):
+
                     cmd = "1 3 0 10 0\n"
                     self.ser.write(cmd)
-
 
 
                     cmd = "1 3 0 10 0\n"

@@ -15,7 +15,10 @@ void Arm::Serial_r(String str) {
                 idx = atoi(strtok(NULL, " "));
                 if(idx != -1){
                     SERVO_SPEED = SERVO_SPEED * atof(strtok(NULL, " "));
-                    serial_Angle_array[idx] = ( (atoi(strtok(NULL, " ")) ? SERVO_UPPER_BOUND[idx] : SERVO_LOWER_BOUND[idx] ) - SERVO_OFFSET[idx]) * SERVO_POSITIVE[idx]; 
+                    if(idx == 0)
+                        serial_Angle_array[idx] = ( (atoi(strtok(NULL, " ")) ? SERVO_LOWER_BOUND[idx] : SERVO_UPPER_BOUND[idx] ) - SERVO_OFFSET[idx]) * SERVO_POSITIVE[idx]; 
+                    else
+                        serial_Angle_array[idx] = ( (atoi(strtok(NULL, " ")) ? SERVO_UPPER_BOUND[idx] : SERVO_LOWER_BOUND[idx] ) - SERVO_OFFSET[idx]) * SERVO_POSITIVE[idx]; 
                 }
                 else{
                     for(int i=0; i<4; i++)
@@ -86,6 +89,9 @@ void Arm::Serial_r(String str) {
             case 311:
                 is_fantasy = !is_fantasy;
                 break;
+            case 312:
+                is_goaway = !is_goaway;
+                break;
             default:
                 break;
         }
@@ -130,6 +136,12 @@ void Arm::Routine(){
             else
                 workType = 112;
             break;
+        case 312:
+            if(is_goaway)
+                goaway();
+            else
+                workType = 112;
+            break;
         default:
             workType = 112;
             break;
@@ -153,6 +165,18 @@ bool Arm::fantasyBaby() {
     static const int motion_step = 4;
     static const float MOTION[motion_step][5] = {{30, -10, -20, 50, -1}, {20, -30, -63, 50, -1}, 
                                                 {50, -80, -85, 50, -1}, {80, -70, -90, 50, -1}};
+    for(int i = 0 ; i < motion_step ; i++){
+        for(int j = 0 ; j < 5 ; j++)
+             motion_array[i][j] = MOTION[i][j];
+    }
+    return Move_series(motion_step, 0);
+}
+
+bool Arm::goaway() {
+    static const int motion_step = 6;
+    static const float MOTION[motion_step][5] = {{130, -80, -105, 50, -1}, 
+                                                {105, -127, -62, 50, -1}, {105, -135, -15, 50, -1}, {100, -127, -62, 50, -1}, 
+                                                {70, -105, -60, 50, -1}, {70, -110, -15, 50, -1}};
     for(int i = 0 ; i < motion_step ; i++){
         for(int j = 0 ; j < 5 ; j++)
              motion_array[i][j] = MOTION[i][j];
@@ -309,9 +333,9 @@ void Arm::printInfo(int servo_index) {
         Serial.print(" ");
         Serial.print(servo[servo_index].now_angle);
         Serial.print(" / ");
-        Serial.print(servo[servo_index].pwm_desire);
-        Serial.print(" ");
-        Serial.print(servo[servo_index].pwm_past);
+//        Serial.print(servo[servo_index].pwm_desire);
+//        Serial.print(" ");
+//        Serial.print(servo[servo_index].pwm_past);
         Serial.print(" st ");
         Serial.print(servo[servo_index].is_stable());
         Serial.print(" en ");

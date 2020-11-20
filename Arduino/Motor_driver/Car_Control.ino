@@ -25,16 +25,16 @@ void Car::Serial_r(String str){
                 desire_X = atof( strtok(NULL, " ") );
                 desire_Y = atof( strtok(NULL, " ") );
                 desire_theta = atoi( strtok(NULL, " ") );
-                desire_theta = (desire_theta > 360) ? 360 : desire_theta;
-                desire_theta = (desire_theta < -360) ? -360 : desire_theta;
+                desire_theta = (desire_theta > 180) ? (desire_theta - 360) : desire_theta;
+                desire_theta = (desire_theta < -180) ? (desire_theta + 360) : desire_theta;
                 break;
                 break;
             case 5:
                 desire_X += atof( strtok(NULL, " ") );
                 desire_Y += atof( strtok(NULL, " ") );
                 desire_theta += atoi( strtok(NULL, " ") );
-                desire_theta = (desire_theta > 360) ? 360 : desire_theta;
-                desire_theta = (desire_theta < -360) ? -360 : desire_theta;
+                desire_theta = (desire_theta > 180) ? (desire_theta - 360) : desire_theta;
+                desire_theta = (desire_theta < -180) ? (desire_theta + 360) : desire_theta;
                 break;
             case -2:
                 desire_X = X = atof( strtok(NULL, " ") );
@@ -104,13 +104,11 @@ void Car::printInfo(){
     Serial.print(" ");
     Serial.print(D.v);
     Serial.print(" / ");
-    Serial.print(A.encoder);
+    Serial.print(p_Kp);
     Serial.print(" ");
-    Serial.print(B.encoder);
+    Serial.print(p_Ki);
     Serial.print(" ");
-    Serial.print(C.encoder);
-    Serial.print(" ");
-    Serial.print(D.encoder);
+    Serial.print(p_Kd);
     Serial.print(" \n");
 }
 
@@ -123,12 +121,15 @@ void Car::PWM_Calculate(){
     
     Vx = (-A.v + B.v - C.v + D.v)/4;
     Vy = (A.v + B.v + C.v + D.v)/4;
+
+
+
     w = (A.v + B.v - C.v - D.v)/(4*(W+L)) * 180 / PI;
     X += (-A.delta_x + B.delta_x - C.delta_x + D.delta_x)/4;
     Y += (A.delta_x + B.delta_x + C.delta_x + D.delta_x)/4;
     theta += ((A.delta_x + B.delta_x - C.delta_x - D.delta_x)/(4*(W+L))) * 180 / PI;
-    theta = (theta > 360) ? 360 : theta;
-    theta = (theta < -360) ? -360 : theta;
+    theta = (theta > 180) ? (theta - 360) : theta;
+    theta = (theta < -180) ? (theta + 360) : theta;
 
     if(control_type >= 4){
         position_PID();
@@ -165,9 +166,9 @@ void Car::position_PID()
     if(abs(pos_err[0]) < 1 && abs(pos_err[1]) < 1){
         pos_err[2] = desire_theta - theta;
         if(pos_err[2]>180)
-            pos_err[2] = 360 - pos_err[2];
+            pos_err[2] -= 360;
         else if(pos_err[2] <= -180){
-            pos_err[2] = 360 + pos_err[2];
+            pos_err[2] += 360;
         }
         pos_err_sum[2] += pos_err[2];
         desire_w = (pos_err[2]*p_Kp + pos_err_sum[2]*p_Ki + (pos_err[0] - pos_err_past[0])*p_Kd) * PI / 180.0;
