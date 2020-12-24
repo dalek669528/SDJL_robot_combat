@@ -2,16 +2,16 @@
 #define _WHEEL_H_
 
 //定义引脚名称 
-#define EN            A1    //使能输出引脚，该引脚时高电平才允许控制直流电机，低电平时电机停止
-#define AD            A0    //PWM输入引脚，读取电池电压
-#define MotorA1 8     //PWM输出引脚，控制直流电机A
-#define MotorA2 13    //Dig输出引脚，控制直流电机A
-#define MotorB1 9     //PWM输出引脚，控制直流电机B
-#define MotorB2 12    //Dig输出引脚，控制直流电机B
-#define MotorC1 10    //PWM输出引脚，控制直流电机C
-#define MotorC2 11    //Dig输出引脚，控制直流电机C
-#define MotorD1 6     //PWM输出引脚，控制直流电机D
-#define MotorD2 7     //Dig输出引脚，控制直流电机D
+#define EN            A6    //使能输出引脚，该引脚时高电平才允许控制直流电机，低电平时电机停止
+#define AD            A7    //PWM输入引脚，读取电池电压
+#define MotorA1 11    //PWM输出引脚，控制直流电机A
+#define MotorA2 7     //Dig输出引脚，控制直流电机A
+#define MotorB1 10    //PWM输出引脚，控制直流电机B
+#define MotorB2 6     //Dig输出引脚，控制直流电机B
+#define MotorC1 9     //PWM输出引脚，控制直流电机C
+#define MotorC2 8     //Dig输出引脚，控制直流电机C
+#define MotorD1 13    //PWM输出引脚，控制直流电机D
+#define MotorD2 12    //Dig输出引脚，控制直流电机D
 
 #define SPD_INT_A1 18
 #define SPD_INT_A2 14

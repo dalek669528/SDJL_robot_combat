@@ -198,38 +198,38 @@ void Car::Car_Control(){
         analogWrite(MotorB1, B.pwm > MAX_PWM ? MAX_PWM : B.pwm);
         analogWrite(MotorB2, 0); //MotorB2置0时电机正转
     }
-//    if(C.pwm < 0) { //反转
-//        analogWrite(MotorC1, 0); //MotorB1置0时电机反转
-//        analogWrite(MotorC2, (-C.pwm) > MAX_PWM ? MAX_PWM : (-C.pwm));
-//    }
-//    else { //正转
-//        analogWrite(MotorC1, C.pwm > MAX_PWM ? MAX_PWM : C.pwm);
-//        analogWrite(MotorC2, 0); //MotorB2置0时电机正转
-//    }
-//    if(D.pwm < 0) { //反转
-//        analogWrite(MotorD1, 0); //MotorB1置0时电机反转
-//        analogWrite(MotorD2, (-D.pwm) > MAX_PWM ? MAX_PWM : (-D.pwm));
-//    }
-//    else { //正转
-//        analogWrite(MotorD1, D.pwm > MAX_PWM ? MAX_PWM : D.pwm);
-//        analogWrite(MotorD2, 0); //MotorB2置0时电机正转
-//    }
-    const int half_pwm = 128; 
-    analogWrite(MotorC2, half_pwm); //MotorC1置0时电机反转
     if(C.pwm < 0) { //反转
-        analogWrite(MotorC1, (half_pwm- ( (-C.pwm) > MAX_PWM ? MAX_PWM : (-C.pwm)) ) );
+        analogWrite(MotorC1, 0); //MotorB1置0时电机反转
+        analogWrite(MotorC2, (-C.pwm) > MAX_PWM ? MAX_PWM : (-C.pwm));
     }
     else { //正转
-        analogWrite(MotorC1, C.pwm>MAX_PWM ? (MAX_PWM + half_pwm) : (C.pwm + half_pwm ));
+        analogWrite(MotorC1, C.pwm > MAX_PWM ? MAX_PWM : C.pwm);
+        analogWrite(MotorC2, 0); //MotorB2置0时电机正转
     }
-
     if(D.pwm < 0) { //反转
-        analogWrite(MotorD1, (half_pwm- ( (-D.pwm) > MAX_PWM ? MAX_PWM : (-D.pwm)) ) );
-        analogWrite(MotorD2, 0 );
-
+        analogWrite(MotorD1, 0); //MotorB1置0时电机反转
+        analogWrite(MotorD2, (-D.pwm) > MAX_PWM ? MAX_PWM : (-D.pwm));
     }
     else { //正转
-        analogWrite(MotorD1, D.pwm>MAX_PWM ? (MAX_PWM + half_pwm) : (D.pwm + half_pwm ));
-        analogWrite(MotorD2, 255);
+        analogWrite(MotorD1, D.pwm > MAX_PWM ? MAX_PWM : D.pwm);
+        analogWrite(MotorD2, 0); //MotorB2置0时电机正转
     }
+//    const int half_pwm = 128; 
+//    analogWrite(MotorC2, half_pwm); //MotorC1置0时电机反转
+//    if(C.pwm < 0) { //反转
+//        analogWrite(MotorC1, (half_pwm- ( (-C.pwm) > MAX_PWM ? MAX_PWM : (-C.pwm)) ) );
+//    }
+//    else { //正转
+//        analogWrite(MotorC1, C.pwm>MAX_PWM ? (MAX_PWM + half_pwm) : (C.pwm + half_pwm ));
+//    }
+//
+//    if(D.pwm < 0) { //反转
+//        analogWrite(MotorD1, (half_pwm- ( (-D.pwm) > MAX_PWM ? MAX_PWM : (-D.pwm)) ) );
+//        analogWrite(MotorD2, 0 );
+//
+//    }
+//    else { //正转
+//        analogWrite(MotorD1, D.pwm>MAX_PWM ? (MAX_PWM + half_pwm) : (D.pwm + half_pwm ));
+//        analogWrite(MotorD2, 255);
+//    }
 }

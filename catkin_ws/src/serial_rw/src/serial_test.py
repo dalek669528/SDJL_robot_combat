@@ -4,7 +4,7 @@ from time import sleep
 import serial
 
 ser = serial.Serial(
-    port='/dev/ttyACM0',
+    port='/dev/ttyS3',
     baudrate = 115200,
     parity=serial.PARITY_NONE,
     stopbits=serial.STOPBITS_ONE,

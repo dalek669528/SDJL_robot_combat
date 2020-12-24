@@ -5,10 +5,10 @@
 #define S_TIRE_RADIUS 3 //3cm
 #define S_MAX_PWM 255
 
-#define SERVO1_PIN A3
-#define SERVO2_PIN A4
-#define SERVO3_PIN A5
-#define SERVO4_PIN A6
+#define SERVO1_PIN A0
+#define SERVO2_PIN A1
+#define SERVO3_PIN A2
+#define SERVO4_PIN A3
 
 #define INT_S1 2
 #define INT_S2 3
